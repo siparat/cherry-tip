@@ -14,8 +14,24 @@ datasource db {
 }
 
 model UserModel {
-    id           String @id @default(cuid())
-    email        String @unique
-    login        String @unique
+    id           String   @id @default(cuid())
+    email        String   @unique
+    login        String   @unique
     passwordHash String
+    profile      ProfileModel?
+}
+
+model ProfileModel {
+    firstName String
+    lastName  String?
+    birth     DateTime
+    city      String?
+    sex       SexEnum
+    userId    String    @unique
+    user      UserModel @relation(fields: [userId], references: [id])
+}
+
+enum SexEnum {
+    Male
+    Female
 }

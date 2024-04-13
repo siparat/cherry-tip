@@ -1,7 +1,7 @@
 import { compare, hash } from 'bcrypt';
 import { IUserEntity } from '../user.interfaces';
 
-export class UserEntity implements IUserEntity {
+export class UserEntity {
 	id?: string;
 	email: string;
 	passwordHash: string;

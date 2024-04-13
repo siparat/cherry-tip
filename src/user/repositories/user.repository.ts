@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { UserEntity } from '../entities/user.entity';
+import { IAccount } from '../user.interfaces';
 
 @Injectable()
 export class UserRepository {
@@ -21,6 +22,10 @@ export class UserRepository {
 				OR: [{ email: { mode: 'insensitive', equals: email } }, { login: { mode: 'insensitive', equals: login } }]
 			}
 		});
+	}
+
+	findAccountById(id: string): Promise<IAccount | null> {
+		return this.database.userModel.findUnique({ where: { id }, include: { profile: true } });
 	}
 
 	deleteById(id: string): Promise<UserModel> {
