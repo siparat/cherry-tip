@@ -11,7 +11,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 		context: ExecutionContext
 	): TUser {
 		if (info instanceof JsonWebTokenError || info instanceof Error) {
-			console.log(info);
 			throw new UnauthorizedException(AuthErrorMessages.UNAUTHORIZED);
 		}
 		return super.handleRequest(err, user, info, context);
