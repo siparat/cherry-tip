@@ -28,7 +28,7 @@ model ProfileModel {
     city      String?
     sex       SexEnum
     userId    String    @unique
-    user      UserModel @relation(fields: [userId], references: [id])
+    user      UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum SexEnum {
