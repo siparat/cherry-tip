@@ -52,7 +52,8 @@ describe('AuthController (e2e)', () => {
 		});
 
 		it('Already exist (fail)', async () => {
-			return request(server).post('/auth/register').send(registerDto).expect(HttpStatus.CONFLICT);
+			const res = await request(server).post('/auth/register').send(registerDto).expect(HttpStatus.CONFLICT);
+			expect(res.body.message).toBe(AuthErrorMessages.ALREADY_EXIST);
 		});
 	});
 
@@ -66,10 +67,11 @@ describe('AuthController (e2e)', () => {
 		});
 
 		it('Not found (fail)', async () => {
-			return request(server)
+			const res = await request(server)
 				.post('/auth/login')
 				.send({ ...loginDto, email: `a${loginDto.email}` })
 				.expect(HttpStatus.NOT_FOUND);
+			expect(res.body.message).toBe(AuthErrorMessages.NOT_FOUND);
 		});
 
 		it('Wrong password (fail)', async () => {
