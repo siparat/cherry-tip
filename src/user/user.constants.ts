@@ -2,7 +2,8 @@ import { SexEnum } from '@prisma/client';
 
 export const UserErrorMessages = {
 	NOT_FOUND: 'Пользователь с таким id не найден',
-	PROFILE_ALREADY_EXIST: 'Профиль уже создан'
+	PROFILE_ALREADY_EXIST: 'Профиль уже создан',
+	UNITS_MODEL_ALREADY_EXIST: 'Таблица характеристик уже создана'
 };
 
 export const UserDtoErrors = {
@@ -14,6 +15,11 @@ export const UserDtoErrors = {
 
 	IS_NOT_DATE: 'Указана не дата',
 	IS_NOT_STRING: 'Указана не строка',
+	IS_NOT_INT: 'Указано не целое число',
+
+	INVALID_WEIGHT: 'Укажите настоящий вес',
+	INVALID_HEIGHT: 'Укажите настоящий рост',
+	INVALID_BLOOD_GLUCOSE: 'Укажите настоящее кол-во сахара в крови',
 
 	INVALID_SEX: `Указан не валидный пол, выберите ${Object.keys(SexEnum).join(' или ')}`
 };

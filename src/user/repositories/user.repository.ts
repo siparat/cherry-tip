@@ -3,6 +3,7 @@ import { UserModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { UserEntity } from '../entities/user.entity';
 import { IAccount } from '../user.interfaces';
+import { excludeProperty } from 'src/helpers/object.helpers';
 
 @Injectable()
 export class UserRepository {
@@ -24,8 +25,19 @@ export class UserRepository {
 		});
 	}
 
-	findAccountById(id: string): Promise<IAccount | null> {
-		return this.database.userModel.findUnique({ where: { id }, include: { profile: true } });
+	async findAccountById(id: string): Promise<IAccount | null> {
+		const account = await this.database.userModel.findUnique({
+			where: { id },
+			include: { profile: true, units: true }
+		});
+		if (!account) {
+			return account;
+		}
+
+		const units = account.units ? excludeProperty(account.units, 'userId') : null;
+		const profile = account.profile ? excludeProperty(account.profile, 'userId') : null;
+
+		return { ...account, profile, units };
 	}
 
 	deleteById(id: string): Promise<UserModel> {

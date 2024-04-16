@@ -14,11 +14,12 @@ datasource db {
 }
 
 model UserModel {
-    id           String   @id @default(cuid())
-    email        String   @unique
-    login        String   @unique
+    id           String        @id @default(cuid())
+    email        String        @unique
+    login        String        @unique
     passwordHash String
     profile      ProfileModel?
+    units        UnitsModel?
 }
 
 model ProfileModel {
@@ -27,8 +28,18 @@ model ProfileModel {
     birth     DateTime
     city      String?
     sex       SexEnum
-    userId    String    @unique
-    user      UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    userId String    @unique
+    user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UnitsModel {
+    weight       Int
+    height       Int
+    bloodGlucose Int?
+
+    userId String    @unique
+    user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum SexEnum {

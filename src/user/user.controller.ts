@@ -9,7 +9,7 @@ import {
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common';
-import { ProfileModel, UserModel } from '@prisma/client';
+import { ProfileModel, UnitsModel, UserModel } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { IAccount } from './user.interfaces';
@@ -18,12 +18,15 @@ import { UserErrorMessages } from './user.constants';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { UserService } from './user.service';
 import { ProfileRepository } from './repositories/profile.repository';
+import { CreateUserUnitsDto } from './dto/create-user-units.dto';
+import { UnitsRepository } from './repositories/units.repository';
 
 @Controller('user')
 export class UserController {
 	constructor(
 		private userRepository: UserRepository,
 		private profileRepository: ProfileRepository,
+		private unitsRepository: UnitsRepository,
 		private userService: UserService
 	) {}
 
@@ -46,5 +49,16 @@ export class UserController {
 			throw new ConflictException(UserErrorMessages.PROFILE_ALREADY_EXIST);
 		}
 		return this.userService.createProfile(id, dto);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@UsePipes(ValidationPipe)
+	@Post('units')
+	async createUnitsModel(@User() { id }: UserModel, @Body() dto: CreateUserUnitsDto): Promise<UnitsModel> {
+		const existedUnitsModel = await this.unitsRepository.findByUserId(id);
+		if (existedUnitsModel) {
+			throw new ConflictException(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST);
+		}
+		return this.userService.createUnitsModel(id, dto);
 	}
 }
