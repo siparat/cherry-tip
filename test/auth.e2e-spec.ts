@@ -7,6 +7,7 @@ import { AppModule } from 'src/app.module';
 import { AuthDtoErrors, AuthErrorMessages } from 'src/auth/auth.constants';
 import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
+import { DatabaseService } from 'src/database/database.service';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import * as request from 'supertest';
 
@@ -90,6 +91,7 @@ describe('AuthController (e2e)', () => {
 	});
 
 	afterEach(async () => {
+		await app.get(DatabaseService).$disconnect();
 		await app.close();
 	});
 

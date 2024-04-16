@@ -7,9 +7,11 @@ import { AppModule } from 'src/app.module';
 import { AuthErrorMessages } from 'src/auth/auth.constants';
 import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
+import { DatabaseService } from 'src/database/database.service';
 import { CreateUserProfileDto } from 'src/user/dto/create-user-profile.dto';
+import { CreateUserUnitsDto } from 'src/user/dto/create-user-units.dto';
 import { UserRepository } from 'src/user/repositories/user.repository';
-import { UserDtoErrors } from 'src/user/user.constants';
+import { UserDtoErrors, UserErrorMessages } from 'src/user/user.constants';
 import * as request from 'supertest';
 
 const loginDto: AuthLoginDto = {
@@ -28,6 +30,12 @@ const createProfileDto: CreateUserProfileDto = {
 	lastName: null,
 	city: null,
 	sex: SexEnum.Male
+};
+
+const createUnitsDto: CreateUserUnitsDto = {
+	height: 180,
+	weight: 80,
+	bloodGlucose: null
 };
 
 describe('UserController (e2e)', () => {
@@ -132,8 +140,74 @@ describe('UserController (e2e)', () => {
 		});
 	});
 
+	describe('/user/units (POST)', () => {
+		it('Is not int (fail)', async () => {
+			const res = await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send({ ...createUnitsDto, height: '' })
+				.expect(HttpStatus.BAD_REQUEST);
+			expect(res.body.message[0]).toBe(UserDtoErrors.IS_NOT_INT);
+		});
+
+		it('Invalid height (fail)', async () => {
+			const res = await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send({ ...createUnitsDto, height: -10 })
+				.expect(HttpStatus.BAD_REQUEST);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_HEIGHT);
+		});
+
+		it('Invalid weight (fail)', async () => {
+			const res = await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send({ ...createProfileDto, weight: 500 })
+				.expect(HttpStatus.BAD_REQUEST);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_WEIGHT);
+		});
+
+		it('Invalid blood glucose (fail)', async () => {
+			const res = await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send({ ...createUnitsDto, bloodGlucose: -100 })
+				.expect(HttpStatus.BAD_REQUEST);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_BLOOD_GLUCOSE);
+		});
+
+		it('Unauthorized (fail)', async () => {
+			const res = await request(server).post('/user/units').send(createUnitsDto).expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+		});
+
+		it('Already exist (fail)', async () => {
+			await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createUnitsDto);
+			const res = await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createUnitsDto)
+				.expect(HttpStatus.CONFLICT);
+			expect(res.body.message).toBe(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST);
+		});
+
+		it('Created (seccess)', async () => {
+			const res = await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createUnitsDto)
+				.expect(HttpStatus.CREATED);
+			expect(res.body.height).toBe(createUnitsDto.height);
+		});
+	});
+
 	afterEach(async () => {
 		await app.get(UserRepository).deleteById(userId);
+		await app.get(DatabaseService).$disconnect();
 		await app.close();
 	});
 });
