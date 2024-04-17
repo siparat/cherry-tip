@@ -1,7 +1,7 @@
 import { ProfileModel, UnitsModel, UserModel } from '@prisma/client';
 import { PartialFields } from 'types/partial-fields.type';
 
-export type IUserEntity = PartialFields<UserModel, 'id'>;
+export type IUserEntity = Omit<PartialFields<UserModel, 'id'>, 'createdAt' | 'updatedAt'>;
 
 export type IProfileEntity = Omit<ProfileModel, 'birth'> &
 	PartialFields<ProfileModel, 'lastName' | 'city'> & {

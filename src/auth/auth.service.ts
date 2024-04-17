@@ -3,7 +3,7 @@ import { UserEntity } from 'src/user/entities/user.entity';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthErrorMessages } from './auth.constants';
-import { UserModel } from '@prisma/client';
+import { RoleEnum, UserModel } from '@prisma/client';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { JwtPayload } from './auth.interfaces';
 import { JwtService } from '@nestjs/jwt';
@@ -20,7 +20,7 @@ export class AuthService {
 		if (existedUser) {
 			throw new ConflictException(AuthErrorMessages.ALREADY_EXIST);
 		}
-		const entity = new UserEntity({ email, login, passwordHash: '' });
+		const entity = new UserEntity({ email, login, passwordHash: '', role: RoleEnum.User });
 		await entity.setPassword(password);
 		const user = await this.userRepository.createUser(entity);
 		return user;
