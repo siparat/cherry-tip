@@ -9,8 +9,5 @@ export const AuthDtoErrors = {
 	MAX_LENGTH_LOGIN: 'Максимальная длина логина – 20',
 	MIN_LENGTH_LOGIN: 'Максимальная длина логина – 2',
 	MAX_LENGTH_PASSWORD: 'Максимальная длина логина – 24',
-	MIN_LENGTH_PASSWORD: 'Максимальная длина логина – 4',
-
-	IS_NOT_EMAIL: 'Указана не почта',
-	IS_NOT_STRING: 'Указана не строка'
+	MIN_LENGTH_PASSWORD: 'Максимальная длина логина – 4'
 };
