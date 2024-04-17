@@ -1,14 +1,14 @@
 import { ProfileModel, UnitsModel, UserModel } from '@prisma/client';
+import { PartialFields } from 'types/partial-fields.type';
 
-export type IUserEntity = Omit<UserModel, 'id'> & Partial<Pick<UserModel, 'id'>>;
+export type IUserEntity = PartialFields<UserModel, 'id'>;
 
-export type IProfileEntity = Omit<ProfileModel, 'birth'> & {
-	birth: Date | string;
-	lastName?: ProfileModel['lastName'];
-	city?: ProfileModel['city'];
-};
+export type IProfileEntity = Omit<ProfileModel, 'birth'> &
+	PartialFields<ProfileModel, 'lastName' | 'city'> & {
+		birth: Date | string;
+	};
 
-export type IUnitsEntity = Omit<UnitsModel, 'bloodGlucose'> & { bloodGlucose?: UnitsModel['bloodGlucose'] };
+export type IUnitsEntity = PartialFields<UnitsModel, 'bloodGlucose'>;
 
 export type IAccount = UserModel & {
 	profile: Omit<ProfileModel, 'userId'> | null;
