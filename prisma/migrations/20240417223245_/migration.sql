@@ -1,0 +1,14 @@
+-- CreateEnum
+CREATE TYPE "RoleEnum" AS ENUM ('User', 'Admin');
+
+-- AlterTable
+ALTER TABLE "RecipeModel" ALTER COLUMN "description" DROP NOT NULL,
+ALTER COLUMN "video" DROP NOT NULL,
+ALTER COLUMN "cookingTime" DROP NOT NULL,
+ALTER COLUMN "difficulty" DROP NOT NULL,
+ALTER COLUMN "protein" SET DATA TYPE DECIMAL(65,30),
+ALTER COLUMN "fat" SET DATA TYPE DECIMAL(65,30),
+ALTER COLUMN "carbs" SET DATA TYPE DECIMAL(65,30);
+
+-- AlterTable
+ALTER TABLE "UserModel" ADD COLUMN     "role" "RoleEnum" NOT NULL DEFAULT 'User';

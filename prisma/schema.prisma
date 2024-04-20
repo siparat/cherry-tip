@@ -16,12 +16,14 @@ datasource db {
 model UserModel {
     id           String        @id @default(cuid())
     createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt 
+    updatedAt    DateTime      @updatedAt
     email        String        @unique
     login        String        @unique
+    role         RoleEnum      @default(User)
     passwordHash String
     profile      ProfileModel?
     units        UnitsModel?
+    recipes      RecipeModel[]
 }
 
 model ProfileModel {
@@ -44,7 +46,67 @@ model UnitsModel {
     user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model RecipeModel {
+    id          Int             @id @default(autoincrement())
+    createdAt   DateTime        @default(now())
+    updatedAt   DateTime        @updatedAt
+    title       String
+    description String?
+    image       String
+    video       String?
+    calories    Int
+    cookingTime Int?
+    difficulty  DifficultyEnum?
+    user        UserModel?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+    userId      String?
+
+    protein Decimal
+    fat     Decimal
+    carbs   Decimal
+
+    category   CategoryModel? @relation(fields: [categoryId], references: [id])
+    categoryId Int?
+
+    dietType    DietTypeModel? @relation(fields: [dietsTypeId], references: [id])
+    dietsTypeId Int?
+
+    preparation   PreparationModel? @relation(fields: [preparationId], references: [id])
+    preparationId Int?
+}
+
+model CategoryModel {
+    id      Int           @id @default(autoincrement())
+    title   String
+    icon    String
+    recipes RecipeModel[]
+}
+
+model PreparationModel {
+    id      Int           @id @default(autoincrement())
+    title   String
+    icon    String
+    recipes RecipeModel[]
+}
+
+model DietTypeModel {
+    id      Int           @id @default(autoincrement())
+    title   String
+    icon    String
+    recipes RecipeModel[]
+}
+
+enum DifficultyEnum {
+    Easy
+    Normal
+    Hard
+}
+
 enum SexEnum {
     Male
     Female
+}
+
+enum RoleEnum {
+    User
+    Admin
 }

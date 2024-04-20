@@ -3,7 +3,8 @@ import { SexEnum } from '@prisma/client';
 export const UserErrorMessages = {
 	NOT_FOUND: 'Пользователь с таким id не найден',
 	PROFILE_ALREADY_EXIST: 'Профиль уже создан',
-	UNITS_MODEL_ALREADY_EXIST: 'Таблица характеристик уже создана'
+	UNITS_MODEL_ALREADY_EXIST: 'Таблица характеристик уже создана',
+	FORBIDDEN_ROLE: 'Ваша роль не позволяет выполнять данную операцию'
 };
 
 export const UserDtoErrors = {
