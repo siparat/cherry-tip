@@ -4,9 +4,10 @@ import { TestingModule, Test } from '@nestjs/testing';
 import { UserModel } from '@prisma/client';
 import { Server } from 'http';
 import { AppModule } from 'src/app.module';
-import { AuthDtoErrors, AuthErrorMessages } from 'src/auth/auth.constants';
+import { AuthErrorMessages } from 'src/auth/auth.constants';
 import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
+import { CommonDtoErrors } from 'src/common/common.constants';
 import { DatabaseService } from 'src/database/database.service';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import * as request from 'supertest';
@@ -42,7 +43,7 @@ describe('AuthController (e2e)', () => {
 				.post('/auth/register')
 				.send({ ...registerDto, email: 'email' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(AuthDtoErrors.IS_NOT_EMAIL);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_EMAIL);
 		});
 
 		it('Created (success)', async () => {
@@ -64,7 +65,7 @@ describe('AuthController (e2e)', () => {
 				.post('/auth/login')
 				.send({ ...loginDto, email: 'email' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(AuthDtoErrors.IS_NOT_EMAIL);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_EMAIL);
 		});
 
 		it('Not found (fail)', async () => {

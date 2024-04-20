@@ -12,6 +12,7 @@ import { CreateUserProfileDto } from 'src/user/dto/create-user-profile.dto';
 import { CreateUserUnitsDto } from 'src/user/dto/create-user-units.dto';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import { UserDtoErrors, UserErrorMessages } from 'src/user/user.constants';
+import { CommonDtoErrors } from 'src/common/common.constants';
 import * as request from 'supertest';
 
 const loginDto: AuthLoginDto = {
@@ -86,7 +87,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, birth: '' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.IS_NOT_DATE);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE);
 		});
 
 		it('Is not string (fail)', async () => {
@@ -95,7 +96,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, firstName: true })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.IS_NOT_STRING);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING);
 		});
 
 		it('Long name (fail)', async () => {
@@ -147,7 +148,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createUnitsDto, height: '' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.IS_NOT_INT);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_INT);
 		});
 
 		it('Invalid height (fail)', async () => {
