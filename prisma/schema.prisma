@@ -14,16 +14,17 @@ datasource db {
 }
 
 model UserModel {
-    id           String        @id @default(cuid())
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @updatedAt
-    email        String        @unique
-    login        String        @unique
-    role         RoleEnum      @default(User)
+    id           String               @id @default(cuid())
+    createdAt    DateTime             @default(now())
+    updatedAt    DateTime             @updatedAt
+    email        String               @unique
+    login        String               @unique
+    role         RoleEnum             @default(User)
     passwordHash String
     profile      ProfileModel?
     units        UnitsModel?
     recipes      RecipeModel[]
+    challenges   UserChallengeModel[]
 }
 
 model ProfileModel {
@@ -95,10 +96,38 @@ model DietTypeModel {
     recipes RecipeModel[]
 }
 
+model ChallengeModel {
+    id             Int                  @id @default(autoincrement())
+    title          String
+    description    String
+    image          String
+    color          String
+    durationDays   Int
+    difficulty     DifficultyEnum       @default(Easy)
+    tips           String[]
+    userChallenges UserChallengeModel[]
+}
+
+model UserChallengeModel {
+    id          Int            @id @default(autoincrement())
+    startDate   DateTime
+    status      StatusEnum     @default(Started)
+    user        UserModel      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId      String
+    challenge   ChallengeModel @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+    challengeId Int
+}
+
 enum DifficultyEnum {
     Easy
     Normal
     Hard
+}
+
+enum StatusEnum {
+    Started
+    Canceled
+    Finished
 }
 
 enum SexEnum {
