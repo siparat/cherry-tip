@@ -53,7 +53,7 @@ export class RecipeService {
 			throw new NotFoundException(RecipeErrorMessages.TAG_NOT_FOUND);
 		}
 
-		const entity = new RecipeEntity(dto);
+		const entity = new RecipeEntity({ ...existWithThisName, ...dto });
 		return this.recipeRepository.editRecipe(id, entity);
 	}
 
