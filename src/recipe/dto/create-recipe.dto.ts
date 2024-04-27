@@ -30,15 +30,15 @@ export class CreateRecipeDto {
 	@IsOptional()
 	difficulty?: DifficultyEnum;
 
-	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_INT })
+	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_NUMBER })
 	@Min(0, { message: CommonDtoErrors.MIN_ZERO })
 	protein: number;
 
-	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_INT })
+	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_NUMBER })
 	@Min(0, { message: CommonDtoErrors.MIN_ZERO })
 	fat: number;
 
-	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_INT })
+	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_NUMBER })
 	@Min(0, { message: CommonDtoErrors.MIN_ZERO })
 	carbs: number;
 
