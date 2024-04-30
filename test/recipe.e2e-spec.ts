@@ -93,7 +93,7 @@ describe('RecipeController (e2e)', () => {
 			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND);
 		});
 
-		it('Received (fail)', async () => {
+		it('Received (success)', async () => {
 			const res = await request(server).get(`/recipe/${recipeId}`).expect(HttpStatus.OK);
 			expect(res.body.title).toBe(createRecipeDto.title);
 		});
@@ -131,8 +131,6 @@ describe('RecipeController (e2e)', () => {
 					.set('Authorization', 'Bearer ' + token)
 					.send({ ...createRecipeDto, title })
 			).body.id;
-
-			console.log(id);
 
 			const res = await request(server)
 				.put(`/recipe/${recipeId}`)
