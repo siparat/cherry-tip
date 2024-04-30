@@ -10,7 +10,7 @@ export class UserRepository {
 	constructor(private database: DatabaseService) {}
 
 	createUser(userEntity: UserEntity): Promise<UserModel> {
-		return this.database.userModel.create({ data: userEntity });
+		return this.database.userModel.create({ data: userEntity.getMainInfo() });
 	}
 
 	findByEmail(email: string): Promise<UserModel | null> {
@@ -28,7 +28,7 @@ export class UserRepository {
 	async findAccountById(id: string): Promise<IAccount | null> {
 		const account = await this.database.userModel.findUnique({
 			where: { id },
-			include: { profile: true, units: true }
+			include: { profile: true, units: true, goal: true }
 		});
 		if (!account) {
 			return account;
@@ -36,8 +36,9 @@ export class UserRepository {
 
 		const units = account.units ? excludeProperty(account.units, 'userId') : null;
 		const profile = account.profile ? excludeProperty(account.profile, 'userId') : null;
+		const goal = account.goal ? excludeProperty(account.goal, 'userId') : null;
 
-		return { ...account, profile, units };
+		return { ...account, profile, units, goal };
 	}
 
 	deleteById(id: string): Promise<UserModel> {

@@ -9,7 +9,7 @@ import {
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common';
-import { ProfileModel, UnitsModel, UserModel } from '@prisma/client';
+import { GoalModel, ProfileModel, UnitsModel, UserModel } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { IAccount } from './user.interfaces';
@@ -20,6 +20,8 @@ import { UserService } from './user.service';
 import { ProfileRepository } from './repositories/profile.repository';
 import { CreateUserUnitsDto } from './dto/create-user-units.dto';
 import { UnitsRepository } from './repositories/units.repository';
+import { CreateUserGoalDto } from './dto/create-user-goal.dto';
+import { GoalRepository } from './repositories/goal.repository';
 
 @Controller('user')
 export class UserController {
@@ -27,6 +29,7 @@ export class UserController {
 		private userRepository: UserRepository,
 		private profileRepository: ProfileRepository,
 		private unitsRepository: UnitsRepository,
+		private goalRepository: GoalRepository,
 		private userService: UserService
 	) {}
 
@@ -60,5 +63,16 @@ export class UserController {
 			throw new ConflictException(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST);
 		}
 		return this.userService.createUnitsModel(id, dto);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@UsePipes(ValidationPipe)
+	@Post('goal')
+	async createGoal(@User() user: UserModel, @Body() dto: CreateUserGoalDto): Promise<GoalModel> {
+		const existedGoal = await this.goalRepository.findByUserId(user.id);
+		if (existedGoal) {
+			throw new ConflictException(UserErrorMessages.GOAL_ALREADY_EXIST);
+		}
+		return this.userService.createGoal(user, dto);
 	}
 }

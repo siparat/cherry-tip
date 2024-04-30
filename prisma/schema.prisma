@@ -22,6 +22,7 @@ model UserModel {
     role         RoleEnum             @default(User)
     passwordHash String
     profile      ProfileModel?
+    goal         GoalModel?
     units        UnitsModel?
     recipes      RecipeModel[]
     challenges   UserChallengeModel[]
@@ -118,6 +119,15 @@ model UserChallengeModel {
     challengeId Int
 }
 
+model GoalModel {
+    type        GoalTypeEnum
+    activity    ActivityEnum
+    calorieGoal Int
+
+    userId String    @unique
+    user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 enum DifficultyEnum {
     Easy
     Normal
@@ -138,4 +148,16 @@ enum SexEnum {
 enum RoleEnum {
     User
     Admin
+}
+
+enum GoalTypeEnum {
+    Stay
+    Gain
+    Lose
+}
+
+enum ActivityEnum {
+    Low
+    Medium
+    High
 }

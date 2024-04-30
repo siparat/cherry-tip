@@ -4,7 +4,12 @@ export const UserErrorMessages = {
 	NOT_FOUND: 'Пользователь с таким id не найден',
 	PROFILE_ALREADY_EXIST: 'Профиль уже создан',
 	UNITS_MODEL_ALREADY_EXIST: 'Таблица характеристик уже создана',
-	FORBIDDEN_ROLE: 'Ваша роль не позволяет выполнять данную операцию'
+	GOAL_ALREADY_EXIST: 'Цель уже создана',
+	FORBIDDEN_ROLE: 'Ваша роль не позволяет выполнять данную операцию',
+	ID_IS_MISSING_IN_ENTITY: 'В UserEntity отсутствует id',
+	IMPOSSIBLE_CALCULATE: 'Невозможно высчитать цель по калорийности',
+	UNITS_IS_REQUIRED: 'Заполните сначала рост и вес',
+	PROFILE_IS_REQUIRED: 'Сначала создайте профиль'
 };
 
 export const UserDtoErrors = {
@@ -17,6 +22,9 @@ export const UserDtoErrors = {
 	INVALID_WEIGHT: 'Укажите настоящий вес',
 	INVALID_HEIGHT: 'Укажите настоящий рост',
 	INVALID_BLOOD_GLUCOSE: 'Укажите настоящее кол-во сахара в крови',
+
+	INVALID_GOAL_ACTIVITY: 'Укажите валидную активность',
+	INVALID_GOAL_TYPE: 'Указана не валидная цель',
 
 	INVALID_SEX: `Указан не валидный пол, выберите ${Object.keys(SexEnum).join(' или ')}`
 };
