@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
-import { SexEnum } from '@prisma/client';
+import { ActivityEnum, GoalTypeEnum, SexEnum } from '@prisma/client';
 import { Server } from 'http';
 import { AppModule } from 'src/app.module';
 import { AuthErrorMessages } from 'src/auth/auth.constants';
@@ -14,6 +14,7 @@ import { UserRepository } from 'src/user/repositories/user.repository';
 import { UserDtoErrors, UserErrorMessages } from 'src/user/user.constants';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import * as request from 'supertest';
+import { CreateUserGoalDto } from 'src/user/dto/create-user-goal.dto';
 
 const loginDto: AuthLoginDto = {
 	email: 'b@b.ru',
@@ -37,6 +38,11 @@ const createUnitsDto: CreateUserUnitsDto = {
 	height: 180,
 	weight: 80,
 	bloodGlucose: null
+};
+
+const createGoalDto: CreateUserGoalDto = {
+	activity: ActivityEnum.Medium,
+	type: GoalTypeEnum.Lose
 };
 
 describe('UserController (e2e)', () => {
@@ -203,6 +209,95 @@ describe('UserController (e2e)', () => {
 				.send(createUnitsDto)
 				.expect(HttpStatus.CREATED);
 			expect(res.body.height).toBe(createUnitsDto.height);
+		});
+	});
+
+	describe('/user/goal (POST)', () => {
+		it('Invalid type', async () => {
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send({ ...createGoalDto, type: 0 })
+				.expect(HttpStatus.BAD_REQUEST);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_TYPE);
+		});
+
+		it('Invalid activity', async () => {
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send({ ...createGoalDto, activity: 0 })
+				.expect(HttpStatus.BAD_REQUEST);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_ACTIVITY);
+		});
+
+		it('Unauthorized (fail)', async () => {
+			const res = await request(server).post('/user/goal').send(createGoalDto).expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+		});
+
+		it('Profile is required (fail)', async () => {
+			await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createUnitsDto);
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createGoalDto)
+				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
+			expect(res.body.message).toBe(UserErrorMessages.PROFILE_IS_REQUIRED);
+		});
+
+		it('Units is required (fail)', async () => {
+			await request(server)
+				.post('/user/profile')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createProfileDto);
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createGoalDto)
+				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
+			expect(res.body.message).toBe(UserErrorMessages.UNITS_IS_REQUIRED);
+		});
+
+		it('Already exist (fail)', async () => {
+			await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createUnitsDto);
+			await request(server)
+				.post('/user/profile')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createProfileDto);
+			await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createGoalDto);
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createGoalDto)
+				.expect(HttpStatus.CONFLICT);
+			expect(res.body.message).toBe(UserErrorMessages.GOAL_ALREADY_EXIST);
+		});
+
+		it('Created (seccess)', async () => {
+			await request(server)
+				.post('/user/units')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createUnitsDto);
+			await request(server)
+				.post('/user/profile')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createProfileDto);
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Authorization', 'Bearer ' + token)
+				.send(createGoalDto)
+				.expect(HttpStatus.CREATED);
+			expect(res.body.type).toBe(createGoalDto.type);
 		});
 	});
 
