@@ -1,4 +1,6 @@
 export const CommonDtoErrors = {
+	INVALID_DATE: 'Укажите валидную дату',
+
 	IS_NOT_STRING: 'Указана не строка',
 	IS_NOT_EMAIL: 'Указана не почта',
 	IS_NOT_DATE: 'Указана не дата',

@@ -26,6 +26,7 @@ model UserModel {
     units        UnitsModel?
     recipes      RecipeModel[]
     challenges   UserChallengeModel[]
+    days         DayModel[]
 }
 
 model ProfileModel {
@@ -49,9 +50,9 @@ model UnitsModel {
 }
 
 model RecipeModel {
-    id          Int             @id @default(autoincrement())
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
+    id          Int               @id @default(autoincrement())
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
     title       String
     description String?
     image       String
@@ -59,7 +60,8 @@ model RecipeModel {
     calories    Int
     cookingTime Int?
     difficulty  DifficultyEnum?
-    user        UserModel?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+    days        DayRecipesModel[]
+    user        UserModel?        @relation(fields: [userId], references: [id], onDelete: SetNull)
     userId      String?
 
     protein Decimal
@@ -126,6 +128,40 @@ model GoalModel {
 
     userId String    @unique
     user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DayModel {
+    id           Int               @id @default(autoincrement())
+    date         DateTime          @default(now())
+    goal         GoalTypeEnum
+    needCalories Int
+    protein      Int
+    carbs        Int
+    fat          Int
+    breakfast    Int
+    lunch        Int
+    dinner       Int
+    snack        Int
+    recipes      DayRecipesModel[]
+
+    userId String
+    user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DayRecipesModel {
+    id Int @id @default(autoincrement())
+
+    recipes  RecipeModel[]
+    category CategoryEnum
+    day      DayModel      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+    dayId    Int
+}
+
+enum CategoryEnum {
+    Breakfast
+    Lunch
+    Dinner
+    Snack
 }
 
 enum DifficultyEnum {

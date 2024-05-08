@@ -6,6 +6,8 @@ import { UnitsEntity } from './units.entity';
 import { UserErrorMessages } from '../user.constants';
 import { GoalEntity } from './goal.entity';
 import { getActivityCoefficient } from 'src/configs/user.config';
+import { Nutrition } from 'src/recipe/recipe.interfaces';
+import { UnprocessableEntityException } from '@nestjs/common';
 
 export class UserEntity {
 	id?: string;
@@ -52,7 +54,7 @@ export class UserEntity {
 
 	calculateGoalCalorie(): number {
 		if (!this.units || !this.profile || !this.goal) {
-			throw new Error(UserErrorMessages.IMPOSSIBLE_CALCULATE);
+			throw new UnprocessableEntityException(UserErrorMessages.IMPOSSIBLE_CALCULATE);
 		}
 		const age = Math.abs(new Date(Date.now() - this.profile.birth.getTime()).getUTCFullYear() - 1970);
 		const activityCoefficient = getActivityCoefficient(this.goal.activity);
@@ -66,6 +68,21 @@ export class UserEntity {
 			case GoalTypeEnum.Gain:
 				return goalCalorie * 1.2;
 		}
+	}
+
+	calculateMacros(): Nutrition {
+		if (!this.goal) {
+			throw new UnprocessableEntityException(UserErrorMessages.GOAL_IS_REQUIRED);
+		}
+		const proteinCoefficient = 2.2;
+		const fatCoefficient = 0.9;
+		const carbsCoefficient = 3.1;
+
+		const protein = (this.goal.calorieGoal * 0.3) / proteinCoefficient;
+		const fat = (this.goal.calorieGoal * 0.25) / fatCoefficient;
+		const carbs = (this.goal.calorieGoal * 0.45) / carbsCoefficient;
+
+		return { protein, carbs, fat };
 	}
 
 	getMainInfo(): IUserEntity {

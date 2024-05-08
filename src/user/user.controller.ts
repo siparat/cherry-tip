@@ -44,7 +44,7 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@UsePipes(ValidationPipe)
+	@UsePipes(new ValidationPipe({ transform: true }))
 	@Post('profile')
 	async createProfile(@User() { id }: UserModel, @Body() dto: CreateUserProfileDto): Promise<ProfileModel> {
 		const existedProfile = await this.profileRepository.findByUserId(id);

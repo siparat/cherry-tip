@@ -9,6 +9,7 @@ export const UserErrorMessages = {
 	ID_IS_MISSING_IN_ENTITY: 'В UserEntity отсутствует id',
 	IMPOSSIBLE_CALCULATE: 'Невозможно высчитать цель по калорийности',
 	UNITS_IS_REQUIRED: 'Заполните сначала рост и вес',
+	GOAL_IS_REQUIRED: 'Введите все данные при регистрации',
 	PROFILE_IS_REQUIRED: 'Сначала создайте профиль'
 };
 

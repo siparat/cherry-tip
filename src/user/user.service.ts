@@ -11,10 +11,12 @@ import { UserEntity } from './entities/user.entity';
 import { GoalRepository } from './repositories/goal.repository';
 import { UserErrorMessages } from './user.constants';
 import { GoalEntity } from './entities/goal.entity';
+import { UserRepository } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
 	constructor(
+		private UserRepository: UserRepository,
 		private profileRepository: ProfileRepository,
 		private unitsRepository: UnitsRepository,
 		private goalRepository: GoalRepository
@@ -44,5 +46,23 @@ export class UserService {
 		const userEntity = new UserEntity(user).setProfile(profileEntity).setUnits(unitsEntity);
 		const entity = new GoalEntity({ ...dto, user: userEntity });
 		return this.goalRepository.createUnitsModel(entity);
+	}
+
+	async getUserEntity(userId: string): Promise<UserEntity | null> {
+		const user = await this.UserRepository.findAccountById(userId);
+		if (!user) {
+			return null;
+		}
+		const entity = new UserEntity(user);
+		if (user.profile) {
+			entity.setProfile(new ProfileEntity({ ...user.profile, userId: user.id }));
+		}
+		if (user.units) {
+			entity.setUnits(new UnitsEntity({ ...user.units, userId: user.id }));
+		}
+		if (user.goal) {
+			entity.setGoal(new GoalEntity({ ...user.goal, user: entity }));
+		}
+		return entity;
 	}
 }
