@@ -1,6 +1,9 @@
 import { DayModel, DayRecipesModel } from '@prisma/client';
+import { IRecipeOnlyNutrion } from 'src/recipe/recipe.interfaces';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { PartialFields } from 'types/partial-fields.type';
+
+export type IDay = DayModel & { recipes: (DayRecipesModel & { recipes: IRecipeOnlyNutrion[] })[] };
 
 export type IDayEntity =
 	| (Omit<

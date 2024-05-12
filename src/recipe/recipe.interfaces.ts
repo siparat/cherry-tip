@@ -26,3 +26,5 @@ export type IRecipeEntity = Omit<
 export type IRecipeTags = Partial<Pick<RecipeModel, 'categoryId' | 'preparationId' | 'dietsTypeId'>>;
 
 export type Nutrition = Pick<IRecipeEntity, 'protein' | 'carbs' | 'fat'>;
+
+export type IRecipeOnlyNutrion = Pick<RecipeModel, 'id' | 'calories' | 'protein' | 'carbs' | 'fat'>;
