@@ -37,7 +37,7 @@ export class CalendarController {
 		if (!day) {
 			throw new NotFoundException(CalendarErrorMessages.DAY_NOT_FOUND);
 		}
-		if (user.role !== RoleEnum.Admin || user.id !== day.userId) {
+		if (user.role !== RoleEnum.Admin && user.id !== day.userId) {
 			throw new ForbiddenException(CalendarErrorMessages.ANOTHER_DAY);
 		}
 		return day;
