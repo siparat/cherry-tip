@@ -1,5 +1,5 @@
 import { DifficultyEnum, StatusEnum, UserChallengeModel } from '@prisma/client';
-import { IChallenge, IChallengeEntity } from '../challenge.interface';
+import { IChallenge, IChallengeEntity } from '../challenge.interfaces';
 import { ChallengeErrorMessages } from '../challenge.constants';
 
 export class ChallengeEntity {

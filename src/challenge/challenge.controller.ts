@@ -22,7 +22,7 @@ import { ChallengeService } from './challenge.service';
 import { ChallengeErrorMessages } from './challenge.constants';
 import { ChallengeRepository } from './repositories/challenge.repository';
 import { User } from 'src/decorators/user.decorator';
-import { IChallenge } from './challenge.interface';
+import { IChallenge } from './challenge.interfaces';
 import { Pagination } from 'src/decorators/pagination.decorator';
 import { IPaginationParams } from 'src/common/common.interfaces';
 import { LimitPaginationPipe } from 'src/pipes/limit-pagination.pipe';

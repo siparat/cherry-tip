@@ -1,5 +1,5 @@
 import { CategoryEnum } from '@prisma/client';
-import { IDayRecipesEntity } from '../calendar.interface';
+import { IDayRecipesEntity } from '../calendar.interfaces';
 
 export class DayRecipesEntity {
 	id?: number;

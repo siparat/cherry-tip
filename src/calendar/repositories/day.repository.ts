@@ -3,7 +3,7 @@ import { CategoryEnum, DayRecipesModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { DayEntity } from '../entities/day.entity';
 import { CalendarErrorMessages } from '../calendar.constants';
-import { IDay } from '../calendar.interface';
+import { IDay } from '../calendar.interfaces';
 
 export const getNutrionsFromDayRecipes = () =>
 	({

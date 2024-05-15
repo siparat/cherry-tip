@@ -4,7 +4,7 @@ import { ChallengeRepository } from './repositories/challenge.repository';
 import { ChallengeErrorMessages } from './challenge.constants';
 import { ChallengeEntity } from './entities/challenge.entity';
 import { ChallengeModel, StatusEnum, UserChallengeModel } from '@prisma/client';
-import { IChallenge } from './challenge.interface';
+import { IChallenge } from './challenge.interfaces';
 import { excludeProperty } from 'src/helpers/object.helpers';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { GoalTypeEnum } from '@prisma/client';
-import { IDayEntity } from '../calendar.interface';
+import { IDayEntity } from '../calendar.interfaces';
 import { UserErrorMessages } from 'src/user/user.constants';
 import { GoalEntity } from 'src/user/entities/goal.entity';
 import { DayRecipesEntity } from './day-recipes.entity';

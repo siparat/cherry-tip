@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChallengeModel, StatusEnum, UserChallengeModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { ChallengeEntity } from '../entities/challenge.entity';
-import { IChallenge } from '../challenge.interface';
+import { IChallenge } from '../challenge.interfaces';
 import { excludeProperty } from 'src/helpers/object.helpers';
 import { IPaginationParams } from 'src/common/common.interfaces';
 
