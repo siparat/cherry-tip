@@ -4,6 +4,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { ChallengeEntity } from '../entities/challenge.entity';
 import { IChallenge } from '../challenge.interface';
 import { excludeProperty } from 'src/helpers/object.helpers';
+import { IPaginationParams } from 'src/common/common.interfaces';
 
 @Injectable()
 export class ChallengeRepository {
@@ -27,6 +28,10 @@ export class ChallengeRepository {
 
 	findById(id: number): Promise<ChallengeModel | null> {
 		return this.database.challengeModel.findUnique({ where: { id } });
+	}
+
+	findMany(options: IPaginationParams): Promise<ChallengeModel[]> {
+		return this.database.challengeModel.findMany(options);
 	}
 
 	async findWithUserInfo(challengeId: number, userId: string): Promise<IChallenge | null> {

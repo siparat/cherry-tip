@@ -23,6 +23,9 @@ import { ChallengeErrorMessages } from './challenge.constants';
 import { ChallengeRepository } from './repositories/challenge.repository';
 import { User } from 'src/decorators/user.decorator';
 import { IChallenge } from './challenge.interface';
+import { Pagination } from 'src/decorators/pagination.decorator';
+import { IPaginationParams } from 'src/common/common.interfaces';
+import { LimitPaginationPipe } from 'src/pipes/limit-pagination.pipe';
 
 @Controller('challenge')
 export class ChallengeController {
@@ -30,6 +33,13 @@ export class ChallengeController {
 		private challengeService: ChallengeService,
 		private challengeRepository: ChallengeRepository
 	) {}
+
+	@Get('search')
+	async searchChallenges(
+		@Pagination(false, new LimitPaginationPipe(20)) pag: IPaginationParams
+	): Promise<ChallengeModel[]> {
+		return this.challengeRepository.findMany(pag);
+	}
 
 	@UseGuards(JwtAuthGuard, new RoleGuard(RoleEnum.Admin))
 	@UsePipes(ValidationPipe)

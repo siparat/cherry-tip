@@ -12,3 +12,8 @@ export const CommonDtoErrors = {
 
 	MIN_ZERO: 'Минимальное значение – 0'
 };
+
+export const CommonErrorMessages = {
+	INCORRECT_PAGINATION_PARAMS: 'Необходимо передать параметры пагинации',
+	IS_NOT_PAGINATION_PARAMS: 'Получены не параметры пагинации'
+};
