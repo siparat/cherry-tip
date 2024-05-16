@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CategoryEnum, DayRecipesModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { DayEntity } from '../entities/day.entity';
@@ -64,7 +64,7 @@ export class DayRepository {
 				include: { recipes: true }
 			});
 		} catch (error) {
-			throw new BadRequestException(CalendarErrorMessages.RECIPE_NOT_FOUND);
+			throw new NotFoundException(CalendarErrorMessages.RECIPE_NOT_FOUND);
 		}
 	}
 }
