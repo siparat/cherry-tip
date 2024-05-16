@@ -4,6 +4,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { DayEntity } from '../entities/day.entity';
 import { CalendarErrorMessages } from '../calendar.constants';
 import { IDay } from '../calendar.interfaces';
+import { resetDateTime } from 'src/helpers/date.helpers';
 
 export const getNutrionsFromDayRecipes = () =>
 	({
@@ -43,7 +44,7 @@ export class DayRepository {
 	}
 
 	getByDate(date: Date, userId: string): Promise<IDay | null> {
-		date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+		date = resetDateTime(date);
 		return this.database.dayModel.findFirst({
 			where: { userId, date },
 			include: getNutrionsFromDayRecipes()
@@ -51,7 +52,7 @@ export class DayRepository {
 	}
 
 	getDayRecipeByDate(date: Date, category: CategoryEnum): Promise<DayRecipesModel | null> {
-		date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+		date = resetDateTime(date);
 		return this.database.dayRecipesModel.findFirst({ where: { category, day: { date } } });
 	}
 

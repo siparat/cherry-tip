@@ -4,6 +4,7 @@ import { UserErrorMessages } from 'src/user/user.constants';
 import { GoalEntity } from 'src/user/entities/goal.entity';
 import { DayRecipesEntity } from './day-recipes.entity';
 import { UnprocessableEntityException } from '@nestjs/common';
+import { resetDateTime } from 'src/helpers/date.helpers';
 
 export class DayEntity {
 	id?: number;
@@ -34,7 +35,7 @@ export class DayEntity {
 			: day.user.calculateMacros();
 
 		this.id;
-		this.date = new Date(Date.UTC(day.date.getFullYear(), day.date.getMonth(), day.date.getDate()));
+		this.date = resetDateTime(day.date);
 		this.goal = isInstanceModel ? day.goal : (day.user.goal as GoalEntity).type;
 		this.needCalories = isInstanceModel ? day.needCalories : (day.user.goal as GoalEntity).calorieGoal;
 		this.protein = day.protein ?? protein;
