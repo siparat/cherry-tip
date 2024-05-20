@@ -1,4 +1,4 @@
-import { RecipeModel } from '@prisma/client';
+import { CategoryModel, DietTypeModel, PreparationModel, RecipeModel } from '@prisma/client';
 import { PartialFields } from 'types/partial-fields.type';
 
 export type IRecipeEntity = Omit<
@@ -24,6 +24,12 @@ export type IRecipeEntity = Omit<
 };
 
 export type IRecipeTags = Partial<Pick<RecipeModel, 'categoryId' | 'preparationId' | 'dietsTypeId'>>;
+
+export interface IRecipeTagModels {
+	categories: CategoryModel[];
+	preparations: PreparationModel[];
+	diets: DietTypeModel[];
+}
 
 export type Nutrition = Pick<IRecipeEntity, 'protein' | 'carbs' | 'fat'>;
 

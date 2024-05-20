@@ -20,13 +20,28 @@ import { RecipeService } from './recipe.service';
 import { RecipeRepository } from './repositories/recipe.repository';
 import { RecipeErrorMessages } from './recipe.constants';
 import { User } from 'src/decorators/user.decorator';
+import { IRecipeTagModels } from './recipe.interfaces';
+import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
+import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
+import { RecipeCategoryRepository } from './repositories/recipe-category.repository';
 
 @Controller('recipe')
 export class RecipeController {
 	constructor(
 		private recipeService: RecipeService,
-		private recipeRepository: RecipeRepository
+		private recipeRepository: RecipeRepository,
+		private recipeCategoryRepository: RecipeCategoryRepository,
+		private recipeDietTypeRepository: RecipeDietTypeRepository,
+		private recipePreparationRepository: RecipePreparationRepository
 	) {}
+
+	@Get('tags')
+	async getAllTags(): Promise<IRecipeTagModels> {
+		const categories = await this.recipeCategoryRepository.findAll();
+		const preparations = await this.recipeDietTypeRepository.findAll();
+		const diets = await this.recipePreparationRepository.findAll();
+		return { categories, preparations, diets };
+	}
 
 	@UseGuards(JwtAuthGuard)
 	@UsePipes(ValidationPipe)

@@ -9,4 +9,8 @@ export class RecipeDietTypeRepository {
 	findById(id: number): Promise<DietTypeModel | null> {
 		return this.database.dietTypeModel.findUnique({ where: { id } });
 	}
+
+	findAll(): Promise<DietTypeModel[]> {
+		return this.database.dietTypeModel.findMany();
+	}
 }

@@ -9,4 +9,8 @@ export class RecipeCategoryRepository {
 	findById(id: number): Promise<CategoryModel | null> {
 		return this.database.categoryModel.findUnique({ where: { id } });
 	}
+
+	findAll(): Promise<CategoryModel[]> {
+		return this.database.categoryModel.findMany();
+	}
 }

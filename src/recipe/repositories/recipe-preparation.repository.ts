@@ -9,4 +9,8 @@ export class RecipePreparationRepository {
 	findById(id: number): Promise<PreparationModel | null> {
 		return this.database.preparationModel.findUnique({ where: { id } });
 	}
+
+	findAll(): Promise<PreparationModel[]> {
+		return this.database.preparationModel.findMany();
+	}
 }
