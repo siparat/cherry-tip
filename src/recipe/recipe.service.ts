@@ -65,7 +65,7 @@ export class RecipeService {
 		];
 
 		for (const { repo, id } of opts) {
-			if (!id) {
+			if (!id && typeof id !== 'number') {
 				continue;
 			}
 			const tag = await repo.findById(id);
