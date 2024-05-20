@@ -8,6 +8,7 @@ export const ChallengeErrorMessages = {
 
 export const ChallengeDtoErrors = {
 	MAX_LENGTH_TITLE: 'Максимальная длина заголовка – 24',
+	MIN_LENGTH_TITLE: 'Минимальная длина заголовка – 1',
 	MAX_LENGTH_DESCRIPTION: 'Максимальная длина описания – 500',
 
 	INCORRECT_DIFFICULT: 'Укажите верную сложность челленджа'

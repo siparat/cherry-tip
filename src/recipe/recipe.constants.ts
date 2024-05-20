@@ -8,6 +8,8 @@ export const RecipeErrorMessages = {
 
 export const RecipeDtoErrors = {
 	MAX_LENGTH_TITLE: 'Максимальная длина названия – 40',
+	MIN_LENGTH_TITLE: 'Минимальная длина названия – 40',
 	MAX_LENGTH_DESCRIPTION: 'Максимальная длина описания – 500',
+	MIN_LENGTH_DESCRIPTION: 'Минимальная длина описания – 100',
 	INCORRECT_DIFFICULT: 'Укажите верную сложность приготовления'
 };
