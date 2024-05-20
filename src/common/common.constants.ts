@@ -10,7 +10,9 @@ export const CommonDtoErrors = {
 	IS_NOT_HEX: 'Указан не hex',
 	IS_NOT_ARRAY: 'Указан не массив',
 
-	MIN_ZERO: 'Минимальное значение – 0'
+	MIN_ZERO: 'Минимальное значение – 0',
+
+	UNKNOWN_VALUE: 'Передано неизвестное значение'
 };
 
 export const CommonErrorMessages = {

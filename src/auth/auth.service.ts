@@ -35,6 +35,14 @@ export class AuthService {
 		return entity.comparePassword(password);
 	}
 
+	async authenticationToken(token: string): Promise<JwtPayload | null> {
+		try {
+			return await this.jwtService.verifyAsync<JwtPayload>(token);
+		} catch (error) {
+			return null;
+		}
+	}
+
 	async generateJwtToken(payload: JwtPayload): Promise<string> {
 		return this.jwtService.signAsync(payload);
 	}

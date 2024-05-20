@@ -9,6 +9,7 @@ import { getJwtConfig } from 'src/configs/jwt.config';
 @Module({
 	imports: [UserModule, JwtModule.registerAsync(getJwtConfig())],
 	controllers: [AuthController],
-	providers: [AuthService, JwtStrategy]
+	providers: [AuthService, JwtStrategy],
+	exports: [AuthService]
 })
 export class AuthModule {}

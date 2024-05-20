@@ -34,6 +34,17 @@ export class ChallengeRepository {
 		return this.database.challengeModel.findMany(options);
 	}
 
+	findManyByStatus(
+		status: StatusEnum | undefined,
+		userId: string,
+		options: IPaginationParams
+	): Promise<ChallengeModel[]> {
+		return this.database.challengeModel.findMany({
+			where: { userChallenges: { some: { userId, status } } },
+			...options
+		});
+	}
+
 	async findWithUserInfo(challengeId: number, userId: string): Promise<IChallenge | null> {
 		const challenge = await this.database.challengeModel.findUnique({
 			where: { id: challengeId },

@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Headers,
 	HttpCode,
 	HttpStatus,
 	NotFoundException,
@@ -10,11 +11,13 @@ import {
 	ParseIntPipe,
 	Post,
 	Put,
+	Query,
+	UnauthorizedException,
 	UseGuards,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common';
-import { ChallengeModel, RoleEnum, UserChallengeModel, UserModel } from '@prisma/client';
+import { ChallengeModel, RoleEnum, StatusEnum, UserChallengeModel, UserModel } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/user/guards/role.guard';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
@@ -26,19 +29,46 @@ import { IChallenge } from './challenge.interfaces';
 import { Pagination } from 'src/decorators/pagination.decorator';
 import { IPaginationParams } from 'src/common/common.interfaces';
 import { LimitPaginationPipe } from 'src/pipes/limit-pagination.pipe';
+import { KnownValuePipe } from 'src/pipes/known-value.pipe';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthErrorMessages } from 'src/auth/auth.constants';
+import { UserRepository } from 'src/user/repositories/user.repository';
 
 @Controller('challenge')
 export class ChallengeController {
 	constructor(
 		private challengeService: ChallengeService,
+		private authService: AuthService,
+		private userRepository: UserRepository,
 		private challengeRepository: ChallengeRepository
 	) {}
 
 	@Get('search')
 	async searchChallenges(
-		@Pagination(false, new LimitPaginationPipe(20)) pag: IPaginationParams
+		@Pagination(false, new LimitPaginationPipe(20)) pag: IPaginationParams,
+		@Headers() headers: Record<string, string>,
+		@Query('status', new KnownValuePipe(['Started', 'Canceled', 'Finished'], undefined)) status?: StatusEnum
 	): Promise<ChallengeModel[]> {
-		return this.challengeRepository.findMany(pag);
+		if (!status) {
+			return this.challengeRepository.findMany(pag);
+		}
+
+		const token = headers['authorization']?.split(' ')[1];
+		if (!token) {
+			throw new UnauthorizedException(AuthErrorMessages.UNAUTHORIZED);
+		}
+
+		const payload = await this.authService.authenticationToken(token);
+		if (!payload) {
+			throw new UnauthorizedException(AuthErrorMessages.UNAUTHORIZED);
+		}
+
+		const user = await this.userRepository.findByEmail(payload.email);
+		if (!user) {
+			throw new NotFoundException(AuthErrorMessages.NOT_FOUND);
+		}
+
+		return this.challengeRepository.findManyByStatus(status, user.id, pag);
 	}
 
 	@UseGuards(JwtAuthGuard, new RoleGuard(RoleEnum.Admin))
