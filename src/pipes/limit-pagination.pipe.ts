@@ -17,7 +17,7 @@ export class LimitPaginationPipe implements PipeTransform {
 		if (!valueIsPaginationParams) {
 			return { take };
 		}
-		return { ...value, take };
+		return { skip: value.skip && Math.max(0, value.skip), take };
 	}
 
 	private isPaginationParams(obj: object): obj is IPaginationParams {

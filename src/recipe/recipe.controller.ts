@@ -9,6 +9,7 @@ import {
 	ParseIntPipe,
 	Post,
 	Put,
+	Query,
 	UseGuards,
 	UsePipes,
 	ValidationPipe
@@ -20,10 +21,13 @@ import { RecipeService } from './recipe.service';
 import { RecipeRepository } from './repositories/recipe.repository';
 import { RecipeErrorMessages } from './recipe.constants';
 import { User } from 'src/decorators/user.decorator';
-import { IRecipeTagModels } from './recipe.interfaces';
+import { IRecipeTagModels, IRecipeTags } from './recipe.interfaces';
 import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
 import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
 import { RecipeCategoryRepository } from './repositories/recipe-category.repository';
+import { Pagination } from 'src/decorators/pagination.decorator';
+import { LimitPaginationPipe } from 'src/pipes/limit-pagination.pipe';
+import { IPaginationParams } from 'src/common/common.interfaces';
 
 @Controller('recipe')
 export class RecipeController {
@@ -34,6 +38,18 @@ export class RecipeController {
 		private recipeDietTypeRepository: RecipeDietTypeRepository,
 		private recipePreparationRepository: RecipePreparationRepository
 	) {}
+
+	@Get('search')
+	async search(
+		@Pagination(false, new LimitPaginationPipe(30)) options: IPaginationParams,
+		@Query('q') q: string,
+		@Query('category', new ParseIntPipe({ optional: true })) categoryId?: number,
+		@Query('preparation', new ParseIntPipe({ optional: true })) preparationId?: number,
+		@Query('diet', new ParseIntPipe({ optional: true })) dietsTypeId?: number
+	): Promise<RecipeModel[]> {
+		const tags: IRecipeTags = { categoryId, preparationId, dietsTypeId };
+		return this.recipeRepository.search(q, options, tags);
+	}
 
 	@Get('tags')
 	async getAllTags(): Promise<IRecipeTagModels> {
@@ -51,7 +67,7 @@ export class RecipeController {
 	}
 
 	@Get(':id')
-	async getRecipeById(@Param('id', ParseIntPipe) id: number): Promise<RecipeModel> {
+	async getRecipeById(@Param('id', new ParseIntPipe({ optional: true })) id: number): Promise<RecipeModel> {
 		const recipe = await this.recipeRepository.findById(id);
 		if (!recipe) {
 			throw new NotFoundException(RecipeErrorMessages.NOT_FOUND);
