@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Delete,
@@ -10,7 +11,9 @@ import {
 	Post,
 	Put,
 	Query,
+	UploadedFile,
 	UseGuards,
+	UseInterceptors,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common';
@@ -27,7 +30,11 @@ import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.reposi
 import { RecipeCategoryRepository } from './repositories/recipe-category.repository';
 import { Pagination } from 'src/decorators/pagination.decorator';
 import { LimitPaginationPipe } from 'src/pipes/limit-pagination.pipe';
-import { IPaginationParams } from 'src/common/common.interfaces';
+import { IPaginationParams, MimeTypeCategory } from 'src/common/common.interfaces';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MimeTypePipe } from 'src/pipes/mime-type-category.pipe';
+import { CommonErrorMessages } from 'src/common/common.constants';
+import { FileSizePipe } from 'src/pipes/file-size.pipe';
 
 @Controller('recipe')
 export class RecipeController {
@@ -49,6 +56,17 @@ export class RecipeController {
 	): Promise<RecipeModel[]> {
 		const tags: IRecipeTags = { categoryId, preparationId, dietsTypeId };
 		return this.recipeRepository.search(q, options, tags);
+	}
+
+	@UseInterceptors(FileInterceptor('file'))
+	@Post('upload/image')
+	async uploadImage(
+		@UploadedFile(new MimeTypePipe(MimeTypeCategory.Image), new FileSizePipe(1500)) file?: Express.Multer.File
+	): Promise<string> {
+		if (!file) {
+			throw new BadRequestException(CommonErrorMessages.FILE_UNDEFINED);
+		}
+		return this.recipeService.saveImage(file);
 	}
 
 	@Get('tags')

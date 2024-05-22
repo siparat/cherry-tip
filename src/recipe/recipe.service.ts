@@ -8,10 +8,13 @@ import { RecipeCategoryRepository } from './repositories/recipe-category.reposit
 import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
 import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
 import { RecipeErrorMessages } from './recipe.constants';
+import { FileService } from 'src/file/file.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class RecipeService {
 	constructor(
+		private fileService: FileService,
 		private recipeRepository: RecipeRepository,
 		private recipeCategoryRepository: RecipeCategoryRepository,
 		private recipeDietTypeRepository: RecipeDietTypeRepository,
@@ -55,6 +58,13 @@ export class RecipeService {
 
 		const entity = new RecipeEntity({ ...existWithThisName, ...dto });
 		return this.recipeRepository.editRecipe(id, entity);
+	}
+
+	async saveImage(file: Express.Multer.File): Promise<string> {
+		const name = randomUUID() + '.avif';
+		const buffer = await this.fileService.toAvif(file.buffer);
+		const url = await this.fileService.writeFile(name, buffer);
+		return url;
 	}
 
 	private async recipeTagsIsExist(tags: IRecipeTags): Promise<boolean> {

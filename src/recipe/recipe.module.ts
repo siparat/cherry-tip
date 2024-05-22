@@ -6,9 +6,10 @@ import { DatabaseModule } from 'src/database/database.module';
 import { RecipeCategoryRepository } from './repositories/recipe-category.repository';
 import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
 import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
+import { FileModule } from 'src/file/file.module';
 
 @Module({
-	imports: [DatabaseModule],
+	imports: [DatabaseModule, FileModule],
 	controllers: [RecipeController],
 	providers: [
 		RecipeService,
