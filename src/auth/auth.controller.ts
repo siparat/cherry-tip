@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	Header,
 	HttpCode,
 	HttpStatus,
 	Post,
@@ -24,6 +25,7 @@ export class AuthController {
 		return this.authService.createUser(dto);
 	}
 
+	@Header('Content-Type', 'text/plain')
 	@UsePipes(ValidationPipe)
 	@HttpCode(HttpStatus.OK)
 	@Post('login')
