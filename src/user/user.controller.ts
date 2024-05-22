@@ -5,6 +5,7 @@ import {
 	Get,
 	NotFoundException,
 	Post,
+	Put,
 	UseGuards,
 	UsePipes,
 	ValidationPipe
@@ -55,6 +56,17 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@UsePipes(new ValidationPipe({ transform: true }))
+	@Put('profile')
+	async updateProfile(@User() { id }: UserModel, @Body() dto: CreateUserProfileDto): Promise<ProfileModel> {
+		const existedProfile = await this.profileRepository.findByUserId(id);
+		if (!existedProfile) {
+			throw new NotFoundException(UserErrorMessages.PROFILE_IS_REQUIRED);
+		}
+		return this.userService.updateProfile(existedProfile, dto);
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@UsePipes(ValidationPipe)
 	@Post('units')
 	async createUnitsModel(@User() { id }: UserModel, @Body() dto: CreateUserUnitsDto): Promise<UnitsModel> {
@@ -67,6 +79,17 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@UsePipes(ValidationPipe)
+	@Put('units')
+	async updateUnitsModel(@User() { id }: UserModel, @Body() dto: CreateUserUnitsDto): Promise<UnitsModel> {
+		const existedUnitsModel = await this.unitsRepository.findByUserId(id);
+		if (!existedUnitsModel) {
+			throw new NotFoundException(UserErrorMessages.UNITS_IS_REQUIRED);
+		}
+		return this.userService.updateUnitsModel(existedUnitsModel, dto);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@UsePipes(ValidationPipe)
 	@Post('goal')
 	async createGoal(@User() user: UserModel, @Body() dto: CreateUserGoalDto): Promise<GoalModel> {
 		const existedGoal = await this.goalRepository.findByUserId(user.id);
@@ -74,5 +97,16 @@ export class UserController {
 			throw new ConflictException(UserErrorMessages.GOAL_ALREADY_EXIST);
 		}
 		return this.userService.createGoal(user, dto);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@UsePipes(ValidationPipe)
+	@Put('goal')
+	async updateGoal(@User() user: UserModel, @Body() dto: CreateUserGoalDto): Promise<GoalModel> {
+		const existedGoal = await this.goalRepository.findByUserId(user.id);
+		if (!existedGoal) {
+			throw new NotFoundException(UserErrorMessages.GOAL_IS_REQUIRED);
+		}
+		return this.userService.updateGoal(existedGoal, dto);
 	}
 }

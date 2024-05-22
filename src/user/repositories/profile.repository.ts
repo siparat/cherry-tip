@@ -11,6 +11,10 @@ export class ProfileRepository {
 		return this.database.profileModel.create({ data: profile });
 	}
 
+	updateProfile(userId: string, profile: ProfileEntity): Promise<ProfileModel> {
+		return this.database.profileModel.update({ where: { userId }, data: profile });
+	}
+
 	findByUserId(userId: string): Promise<ProfileModel | null> {
 		return this.database.profileModel.findUnique({ where: { userId } });
 	}

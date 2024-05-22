@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { GoalModel, ProfileModel, UnitsModel, UserModel } from '@prisma/client';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { ProfileEntity } from './entities/profile.entity';
@@ -16,7 +16,7 @@ import { UserRepository } from './repositories/user.repository';
 @Injectable()
 export class UserService {
 	constructor(
-		private UserRepository: UserRepository,
+		private userRepository: UserRepository,
 		private profileRepository: ProfileRepository,
 		private unitsRepository: UnitsRepository,
 		private goalRepository: GoalRepository
@@ -27,9 +27,33 @@ export class UserService {
 		return this.profileRepository.createProfile(entity);
 	}
 
+	async updateProfile(oldProfile: ProfileModel, dto: CreateUserProfileDto): Promise<ProfileModel> {
+		const entity = new ProfileEntity({ ...oldProfile, ...dto });
+		const profile = await this.profileRepository.updateProfile(oldProfile.userId, entity);
+		const userEntity = await this.getUserEntity(oldProfile.userId);
+		if (!userEntity?.goal) {
+			throw new UnprocessableEntityException(UserErrorMessages.GOAL_IS_REQUIRED);
+		}
+		const goalEntity = new GoalEntity({ ...userEntity.goal, user: userEntity });
+		await this.goalRepository.updateGoal(entity.userId, goalEntity);
+		return profile;
+	}
+
 	async createUnitsModel(userId: string, dto: CreateUserUnitsDto): Promise<UnitsModel> {
 		const entity = new UnitsEntity({ ...dto, userId });
 		return this.unitsRepository.createUnitsModel(entity);
+	}
+
+	async updateUnitsModel(oldUnitsModel: UnitsModel, dto: CreateUserUnitsDto): Promise<UnitsModel> {
+		const entity = new UnitsEntity({ ...oldUnitsModel, ...dto });
+		const unitsModel = await this.unitsRepository.updateUnitsModel(oldUnitsModel.userId, entity);
+		const userEntity = await this.getUserEntity(oldUnitsModel.userId);
+		if (!userEntity?.goal) {
+			throw new UnprocessableEntityException(UserErrorMessages.GOAL_IS_REQUIRED);
+		}
+		const goalEntity = new GoalEntity({ ...userEntity.goal, user: userEntity });
+		await this.goalRepository.updateGoal(entity.userId, goalEntity);
+		return unitsModel;
 	}
 
 	async createGoal(user: UserModel, dto: CreateUserGoalDto): Promise<GoalModel> {
@@ -45,11 +69,20 @@ export class UserService {
 		const profileEntity = new ProfileEntity(profile);
 		const userEntity = new UserEntity(user).setProfile(profileEntity).setUnits(unitsEntity);
 		const entity = new GoalEntity({ ...dto, user: userEntity });
-		return this.goalRepository.createUnitsModel(entity);
+		return this.goalRepository.createGoal(entity);
+	}
+
+	async updateGoal(oldGoal: GoalModel, dto: CreateUserGoalDto): Promise<GoalModel> {
+		const userEntity = await this.getUserEntity(oldGoal.userId);
+		if (!userEntity) {
+			throw new NotFoundException(UserErrorMessages.NOT_FOUND);
+		}
+		const entity = new GoalEntity({ ...oldGoal, ...dto, user: userEntity });
+		return this.goalRepository.updateGoal(oldGoal.userId, entity);
 	}
 
 	async getUserEntity(userId: string): Promise<UserEntity | null> {
-		const user = await this.UserRepository.findAccountById(userId);
+		const user = await this.userRepository.findAccountById(userId);
 		if (!user) {
 			return null;
 		}

@@ -6,8 +6,12 @@ import { GoalModel } from '@prisma/client';
 export class GoalRepository {
 	constructor(private database: DatabaseService) {}
 
-	createUnitsModel(goalModel: GoalModel): Promise<GoalModel> {
+	createGoal(goalModel: GoalModel): Promise<GoalModel> {
 		return this.database.goalModel.create({ data: goalModel });
+	}
+
+	updateGoal(userId: string, goalModel: GoalModel): Promise<GoalModel> {
+		return this.database.goalModel.update({ where: { userId }, data: goalModel });
 	}
 
 	findByUserId(userId: string): Promise<GoalModel | null> {

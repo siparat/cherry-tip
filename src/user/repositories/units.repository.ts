@@ -11,6 +11,10 @@ export class UnitsRepository {
 		return this.database.unitsModel.create({ data: unitsEntity });
 	}
 
+	updateUnitsModel(userId: string, unitsEntity: UnitsEntity): Promise<UnitsModel> {
+		return this.database.unitsModel.update({ where: { userId }, data: unitsEntity });
+	}
+
 	findByUserId(userId: string): Promise<UnitsModel | null> {
 		return this.database.unitsModel.findUnique({ where: { userId } });
 	}
