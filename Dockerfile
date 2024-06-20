@@ -3,6 +3,7 @@ WORKDIR /opt/app
 ADD *.json ./
 RUN npm ci
 ADD . .
+RUN npm run generate
 RUN npm run build
 
 FROM node:20-alpine

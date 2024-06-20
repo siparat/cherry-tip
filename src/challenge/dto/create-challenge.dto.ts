@@ -11,7 +11,7 @@ export class CreateChallengeDto {
 	@IsString({ message: CommonDtoErrors.IS_NOT_STRING })
 	title: string;
 
-	@ApiProperty({ maxLength: 24 })
+	@ApiProperty({ maxLength: 500 })
 	@MaxLength(500, { message: ChallengeDtoErrors.MAX_LENGTH_DESCRIPTION })
 	@IsString({ message: CommonDtoErrors.IS_NOT_STRING })
 	description: string;

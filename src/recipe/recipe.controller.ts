@@ -5,6 +5,7 @@ import {
 	Delete,
 	ForbiddenException,
 	Get,
+	Header,
 	NotFoundException,
 	Param,
 	ParseIntPipe,
@@ -58,6 +59,8 @@ export class RecipeController {
 		return this.recipeRepository.search(q, options, tags);
 	}
 
+	@Header('Content-Type', 'text/plain')
+	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('file'))
 	@Post('upload/image')
 	async uploadImage(
