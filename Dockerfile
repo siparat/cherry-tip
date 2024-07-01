@@ -10,8 +10,6 @@ FROM node:20-alpine
 WORKDIR /opt/app
 ADD package*.json ./
 RUN npm ci --omit=dev
-COPY --from=build /opt/app/.env ./.env
-COPY --from=build /opt/app/prisma ./prisma
 COPY --from=build /opt/app/dist ./dist
 RUN npm run generate
 CMD ["npm", "run", "start:prod"]

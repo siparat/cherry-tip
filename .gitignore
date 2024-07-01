@@ -30,6 +30,7 @@ lerna-debug.log*
 
 .env
 /uploads/
+/docker-compose.yml
 
 # IDE - VSCode
 .vscode/*
