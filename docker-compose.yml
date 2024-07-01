@@ -23,6 +23,7 @@ services:
       - database
     volumes:
       - uploads:/opt/app/uploads
+      - ./.env:/opt/app/.env
     networks:
       - main
 
