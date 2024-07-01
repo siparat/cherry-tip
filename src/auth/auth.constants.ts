@@ -8,6 +8,6 @@ export const AuthErrorMessages = {
 export const AuthDtoErrors = {
 	MAX_LENGTH_LOGIN: 'Максимальная длина логина – 20',
 	MIN_LENGTH_LOGIN: 'Максимальная длина логина – 2',
-	MAX_LENGTH_PASSWORD: 'Максимальная длина логина – 24',
-	MIN_LENGTH_PASSWORD: 'Максимальная длина логина – 4'
+	MAX_LENGTH_PASSWORD: 'Максимальная длина пароля – 24',
+	MIN_LENGTH_PASSWORD: 'Максимальная длина пароля – 4'
 };
