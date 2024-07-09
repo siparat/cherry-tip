@@ -9,7 +9,7 @@ export type IProfileEntity = Omit<ProfileModel, 'birth'> &
 		birth: Date | string;
 	};
 
-export type IUnitsEntity = PartialFields<UnitsModel, 'bloodGlucose'>;
+export type IUnitsEntity = PartialFields<UnitsModel, 'bloodGlucose' | 'targetWeight'>;
 
 export type IAccount = UserModel & {
 	profile: Omit<ProfileModel, 'userId'> | null;

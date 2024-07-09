@@ -22,4 +22,10 @@ export class CreateUserUnitsDto {
 	@IsInt({ message: CommonDtoErrors.IS_NOT_INT })
 	@IsOptional()
 	bloodGlucose: number | null;
+
+	@ApiProperty({ minimum: 0, maximum: 300 })
+	@Max(300, { message: UserDtoErrors.INVALID_WEIGHT })
+	@Min(0, { message: UserDtoErrors.INVALID_WEIGHT })
+	@IsOptional()
+	targetWeight: number | null;
 }

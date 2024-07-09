@@ -44,6 +44,7 @@ model UnitsModel {
     weight       Int
     height       Int
     bloodGlucose Int?
+	targetWeight Int?
 
     userId String    @unique
     user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
