@@ -5,7 +5,7 @@ export class FileSizePipe implements PipeTransform {
 
 	transform(value: Express.Multer.File): Express.Multer.File {
 		if (value.size && value.size > this.sizeKb * 1024) {
-			throw new BadRequestException(`Максимальный размер файла – ${this.sizeKb}KB`);
+			throw new BadRequestException(`Maximum file size – ${this.sizeKb}KB`);
 		}
 		return value;
 	}
