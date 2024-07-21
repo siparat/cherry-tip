@@ -1,10 +1,12 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
+import { ExceptionFilter } from './filters/exception.filter';
 
 async function bootstrap(): Promise<void> {
 	const app = await NestFactory.create<INestApplication>(AppModule);
+	app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 	app.setGlobalPrefix('v1');
 
 	const options = new DocumentBuilder()

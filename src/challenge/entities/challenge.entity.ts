@@ -26,7 +26,7 @@ export class ChallengeEntity {
 
 	getPublicInfo(): IChallenge {
 		if (!this.id) {
-			throw new Error(ChallengeErrorMessages.ID_IS_MISSING_IN_ENTITY);
+			throw new Error(ChallengeErrorMessages.ID_IS_MISSING_IN_ENTITY.en);
 		}
 		return {
 			...this,

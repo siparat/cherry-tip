@@ -14,3 +14,5 @@ export enum MimeTypeCategory {
 	Text = 'text',
 	Video = 'video'
 }
+
+export type ErrorsType = Record<string, { ru: string; en: string }>;

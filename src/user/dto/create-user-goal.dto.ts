@@ -5,10 +5,10 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserGoalDto {
 	@ApiProperty({ enum: ActivityEnum })
-	@IsEnum(ActivityEnum, { message: UserDtoErrors.INVALID_GOAL_ACTIVITY })
+	@IsEnum(ActivityEnum, { message: UserDtoErrors.INVALID_GOAL_ACTIVITY.en })
 	activity: ActivityEnum;
 
 	@ApiProperty({ enum: GoalTypeEnum })
-	@IsEnum(GoalTypeEnum, { message: UserDtoErrors.INVALID_GOAL_TYPE })
+	@IsEnum(GoalTypeEnum, { message: UserDtoErrors.INVALID_GOAL_TYPE.en })
 	type: GoalTypeEnum;
 }

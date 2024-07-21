@@ -1,15 +1,47 @@
-export const RecipeErrorMessages = {
-	ALREADY_EXIST_WITH_THIS_NAME: 'Рецепт с таким названием уже есть, укажите другое название',
-	NOT_FOUND: 'Рецепт с таким id не найден',
-	TAG_NOT_FOUND: 'Категория с таким id не найдена',
-	FORBIDDEN_EDIT_RECIPE: 'Запрещено редактировать чужой рецепт',
-	FORBIDDEN_DELETE_RECIPE: 'Запрещено удалять чужой рецепт'
+import { ErrorsType } from 'src/common/common.interfaces';
+
+export const RecipeErrorMessages: ErrorsType = {
+	ALREADY_EXIST_WITH_THIS_NAME: {
+		ru: 'Рецепт с таким названием уже есть, укажите другое название',
+		en: 'There is already a recipe with this name, please specify another name'
+	},
+	NOT_FOUND: {
+		ru: 'Рецепт с таким id не найден',
+		en: 'The recipe with this ID was not found'
+	},
+	TAG_NOT_FOUND: {
+		ru: 'Категория с таким id не найдена',
+		en: 'The category with this ID was not found'
+	},
+	FORBIDDEN_EDIT_RECIPE: {
+		ru: 'Запрещено редактировать чужой рецепт',
+		en: "It is forbidden to edit someone else's recipe"
+	},
+	FORBIDDEN_DELETE_RECIPE: {
+		ru: 'Запрещено удалять чужой рецепт',
+		en: "It is forbidden to delete someone else's recipe"
+	}
 };
 
-export const RecipeDtoErrors = {
-	MAX_LENGTH_TITLE: 'Максимальная длина названия – 40',
-	MIN_LENGTH_TITLE: 'Минимальная длина названия – 40',
-	MAX_LENGTH_DESCRIPTION: 'Максимальная длина описания – 500',
-	MIN_LENGTH_DESCRIPTION: 'Минимальная длина описания – 100',
-	INCORRECT_DIFFICULT: 'Укажите верную сложность приготовления'
+export const RecipeDtoErrors: ErrorsType = {
+	MAX_LENGTH_TITLE: {
+		ru: 'Максимальная длина названия – 40',
+		en: 'The maximum length of the name is 40'
+	},
+	MIN_LENGTH_TITLE: {
+		ru: 'Минимальная длина названия – 40',
+		en: 'The minimum length of the name is 40'
+	},
+	MAX_LENGTH_DESCRIPTION: {
+		ru: 'Максимальная длина описания – 500',
+		en: 'The maximum description length is 500'
+	},
+	MIN_LENGTH_DESCRIPTION: {
+		ru: 'Минимальная длина описания – 100',
+		en: 'The minimum description length is 100'
+	},
+	INCORRECT_DIFFICULT: {
+		ru: 'Укажите верную сложность приготовления',
+		en: 'Specify the correct cooking difficulty'
+	}
 };
