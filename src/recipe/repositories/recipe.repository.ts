@@ -21,6 +21,10 @@ export class RecipeRepository {
 		});
 	}
 
+	findMineRecipes(userId: string, options: IPaginationParams): Promise<RecipeModel[]> {
+		return this.database.recipeModel.findMany({ ...options, where: { userId } });
+	}
+
 	createRecipe(recipeEntity: RecipeEntity): Promise<RecipeModel> {
 		return this.database.recipeModel.create({ data: recipeEntity });
 	}

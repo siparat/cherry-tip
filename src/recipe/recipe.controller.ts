@@ -59,6 +59,15 @@ export class RecipeController {
 		return this.recipeRepository.search(q, options, tags);
 	}
 
+	@UseGuards(JwtAuthGuard)
+	@Get('my')
+	async getMyRecipes(
+		@User() user: UserModel,
+		@Pagination(false, new LimitPaginationPipe(30)) options: IPaginationParams
+	): Promise<RecipeModel[]> {
+		return this.recipeRepository.findMineRecipes(user.id, options);
+	}
+
 	@Header('Content-Type', 'text/plain')
 	@UseGuards(JwtAuthGuard)
 	@UseInterceptors(FileInterceptor('file'))
