@@ -4,6 +4,8 @@ import { ChallengeErrorMessages } from '../challenge.constants';
 
 export class ChallengeEntity {
 	id?: number;
+	createdAt?: Date;
+	updatedAt?: Date;
 	title: string;
 	description: string;
 	image: string;
@@ -29,6 +31,8 @@ export class ChallengeEntity {
 			throw new Error(ChallengeErrorMessages.ID_IS_MISSING_IN_ENTITY.en);
 		}
 		return {
+			createdAt: new Date(),
+			updatedAt: new Date(),
 			...this,
 			id: this.id,
 			userChallenge: this.userChallenge ?? null
