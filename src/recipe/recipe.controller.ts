@@ -84,8 +84,8 @@ export class RecipeController {
 	@Get('tags')
 	async getAllTags(): Promise<IRecipeTagModels> {
 		const categories = await this.recipeCategoryRepository.findAll();
-		const preparations = await this.recipeDietTypeRepository.findAll();
-		const diets = await this.recipePreparationRepository.findAll();
+		const preparations = await this.recipePreparationRepository.findAll();
+		const diets = await this.recipeDietTypeRepository.findAll();
 		return { categories, preparations, diets };
 	}
 
