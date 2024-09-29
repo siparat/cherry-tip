@@ -1,9 +1,18 @@
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { AuthDtoErrors } from '../auth.constants';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthRegisterDto {
+	@IsEmpty()
+	id: number;
+
+	@IsEmpty()
+	createdAt: Date;
+
+	@IsEmpty()
+	updatedAt: Date;
+
 	@ApiProperty({ example: 'a@a.ru' })
 	@IsEmail({}, { message: CommonDtoErrors.IS_NOT_EMAIL.en })
 	email: string;

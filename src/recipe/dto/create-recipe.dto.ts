@@ -1,10 +1,33 @@
 import { DifficultyEnum } from '@prisma/client';
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUrl, MaxLength, Min, MinLength } from 'class-validator';
+import {
+	IsEmpty,
+	IsEnum,
+	IsInt,
+	IsNumber,
+	IsOptional,
+	IsString,
+	IsUrl,
+	MaxLength,
+	Min,
+	MinLength
+} from 'class-validator';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import { RecipeDtoErrors } from '../recipe.constants';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRecipeDto {
+	@IsEmpty()
+	id: number;
+
+	@IsEmpty()
+	createdAt: Date;
+
+	@IsEmpty()
+	updatedAt: Date;
+
+	@IsEmpty()
+	userId: string;
+
 	@ApiProperty({ minLength: 1, maxLength: 40 })
 	@MaxLength(40, { message: RecipeDtoErrors.MAX_LENGTH_TITLE.en })
 	@MinLength(1, { message: RecipeDtoErrors.MAX_LENGTH_TITLE.en })

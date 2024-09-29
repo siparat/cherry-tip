@@ -36,7 +36,7 @@ export class RecipeService {
 			throw new NotFoundException(RecipeErrorMessages.TAG_NOT_FOUND);
 		}
 
-		const entity = new RecipeEntity({ userId, ...dto });
+		const entity = new RecipeEntity({ ...dto, userId });
 		return this.recipeRepository.createRecipe(entity);
 	}
 
