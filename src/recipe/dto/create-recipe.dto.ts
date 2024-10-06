@@ -36,7 +36,7 @@ export class CreateRecipeDto {
 
 	@ApiProperty({ minLength: 100, maxLength: 500 })
 	@MaxLength(500, { message: RecipeDtoErrors.MAX_LENGTH_DESCRIPTION.en })
-	@MaxLength(100, { message: RecipeDtoErrors.MIN_LENGTH_DESCRIPTION.en })
+	@MinLength(100, { message: RecipeDtoErrors.MIN_LENGTH_DESCRIPTION.en })
 	@IsString({ message: CommonDtoErrors.IS_NOT_STRING.en })
 	@IsOptional()
 	description?: string;
