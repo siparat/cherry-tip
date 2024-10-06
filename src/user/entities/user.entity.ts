@@ -8,6 +8,7 @@ import { GoalEntity } from './goal.entity';
 import { getActivityCoefficient } from 'src/configs/user.config';
 import { Nutrition } from 'src/recipe/recipe.interfaces';
 import { UnprocessableEntityException } from '@nestjs/common';
+import { NutrientValues } from 'src/recipe/recipe.constants';
 
 export class UserEntity {
 	id?: string;
@@ -74,9 +75,9 @@ export class UserEntity {
 		if (!this.goal) {
 			throw new UnprocessableEntityException(UserErrorMessages.GOAL_IS_REQUIRED);
 		}
-		const proteinCoefficient = 2.2;
-		const fatCoefficient = 0.9;
-		const carbsCoefficient = 3.1;
+		const proteinCoefficient = 2.2 * NutrientValues.PROTEIN;
+		const fatCoefficient = 0.9 * NutrientValues.FAT;
+		const carbsCoefficient = 3.1 * NutrientValues.CARBS;
 
 		const protein = (this.goal.calorieGoal * 0.3) / proteinCoefficient;
 		const fat = (this.goal.calorieGoal * 0.25) / fatCoefficient;

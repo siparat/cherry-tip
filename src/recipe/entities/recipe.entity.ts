@@ -1,5 +1,6 @@
 import { DifficultyEnum } from '@prisma/client';
 import { IRecipeEntity } from '../recipe.interfaces';
+import { NutrientValues } from '../recipe.constants';
 
 export class RecipeEntity {
 	fat: number;
@@ -38,6 +39,6 @@ export class RecipeEntity {
 	}
 
 	static calculateCalories(protein: number, carbs: number, fat: number): number {
-		return 4 * protein + 4 * carbs + 9 * fat;
+		return NutrientValues.PROTEIN * protein + NutrientValues.FAT * fat + NutrientValues.CARBS * carbs;
 	}
 }

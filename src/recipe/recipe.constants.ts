@@ -1,5 +1,11 @@
 import { ErrorsType } from 'src/common/common.interfaces';
 
+export const NutrientValues = {
+	PROTEIN: 4,
+	CARBS: 4,
+	FAT: 9
+};
+
 export const RecipeErrorMessages: ErrorsType = {
 	ALREADY_EXIST_WITH_THIS_NAME: {
 		ru: 'Рецепт с таким названием уже есть, укажите другое название',
