@@ -7,7 +7,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SetRecipesDto {
 	@ApiProperty({ description: 'Дата в формате ISO8601 ' })
-	@MaxDate(new Date(), { message: CommonDtoErrors.INVALID_DATE.en })
 	@IsDate({ message: CommonDtoErrors.IS_NOT_DATE.en })
 	@Type(() => Date)
 	date: Date;
