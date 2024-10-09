@@ -2,7 +2,6 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
-	Header,
 	HttpCode,
 	HttpStatus,
 	Post,
@@ -14,6 +13,7 @@ import { AuthRegisterDto } from './dto/auth-register.dto';
 import { UserModel } from '@prisma/client';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthErrorMessages } from './auth.constants';
+import { LoginResponse } from './auth.interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -25,15 +25,15 @@ export class AuthController {
 		return this.authService.createUser(dto);
 	}
 
-	@Header('Content-Type', 'text/plain')
 	@UsePipes(ValidationPipe)
 	@HttpCode(HttpStatus.OK)
 	@Post('login')
-	async login(@Body() dto: AuthLoginDto): Promise<string> {
+	async login(@Body() dto: AuthLoginDto): Promise<LoginResponse> {
 		const userIsValid = await this.authService.validateUser(dto);
 		if (!userIsValid) {
 			throw new BadRequestException(AuthErrorMessages.WRONG_PASSWORD);
 		}
-		return this.authService.generateJwtToken({ email: dto.email });
+		const token = await this.authService.generateJwtToken({ email: dto.email });
+		return { token };
 	}
 }
