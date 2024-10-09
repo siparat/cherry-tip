@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { NestApplication } from '@nestjs/core';
+import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { DifficultyEnum } from '@prisma/client';
 import { Server } from 'http';
@@ -12,6 +12,7 @@ import { UserRepository } from 'src/user/repositories/user.repository';
 import * as request from 'supertest';
 import { CreateRecipeDto } from 'src/recipe/dto/create-recipe.dto';
 import { RecipeErrorMessages } from 'src/recipe/recipe.constants';
+import { ExceptionFilter } from 'src/filters/exception.filter';
 
 const loginDto: AuthLoginDto = {
 	email: 'c@c.ru',
@@ -45,17 +46,18 @@ describe('RecipeController (e2e)', () => {
 			imports: [AppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 		server = app.getHttpServer();
 		app.init();
 		userId = userId ?? (await request(server).post('/auth/register').send(registerDto)).body.id;
-		token = (await request(server).post('/auth/login').send(loginDto)).text;
+		token = (await request(server).post('/auth/login').send(loginDto)).body.token;
 		database = app.get(DatabaseService);
 	});
 
 	describe('/recipe (POST)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post('/recipe').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Tag not found (fail)', async () => {
@@ -64,7 +66,7 @@ describe('RecipeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createRecipeDto, categoryId: -1 })
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND);
+			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.en);
 		});
 
 		it('Created (success)', async () => {
@@ -83,14 +85,14 @@ describe('RecipeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createRecipeDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME);
+			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
 		});
 	});
 
 	describe('/recipe/:id (GET)', () => {
 		it('Not found (fail)', async () => {
 			const res = await request(server).get('/recipe/-1').expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Received (success)', async () => {
@@ -102,7 +104,7 @@ describe('RecipeController (e2e)', () => {
 	describe('/recipe/:id (PUT)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).put(`/recipe/${recipeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Not found (fail)', async () => {
@@ -111,7 +113,7 @@ describe('RecipeController (e2e)', () => {
 				.send(createRecipeDto)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Tag not found (fail)', async () => {
@@ -120,7 +122,7 @@ describe('RecipeController (e2e)', () => {
 				.send({ ...createRecipeDto, categoryId: -1 })
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND);
+			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.en);
 		});
 
 		it('Titles match (fail)', async () => {
@@ -140,7 +142,7 @@ describe('RecipeController (e2e)', () => {
 
 			await database.recipeModel.delete({ where: { id } });
 
-			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME);
+			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
 		});
 
 		it('Edited (success)', async () => {
@@ -156,7 +158,7 @@ describe('RecipeController (e2e)', () => {
 	describe('/recipe/:id (DELETE)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).delete(`/recipe/${recipeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Not found (fail)', async () => {
@@ -164,7 +166,7 @@ describe('RecipeController (e2e)', () => {
 				.delete(`/recipe/-1`)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Deleted (success)', async () => {

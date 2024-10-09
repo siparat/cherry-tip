@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { NestApplication } from '@nestjs/core';
+import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { ActivityEnum, GoalTypeEnum, SexEnum } from '@prisma/client';
 import { Server } from 'http';
@@ -15,6 +15,7 @@ import { UserDtoErrors, UserErrorMessages } from 'src/user/user.constants';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import * as request from 'supertest';
 import { CreateUserGoalDto } from 'src/user/dto/create-user-goal.dto';
+import { ExceptionFilter } from 'src/filters/exception.filter';
 
 const loginDto: AuthLoginDto = {
 	email: 'b@b.ru',
@@ -37,6 +38,7 @@ const createProfileDto: CreateUserProfileDto = {
 const createUnitsDto: CreateUserUnitsDto = {
 	height: 180,
 	weight: 80,
+	targetWeight: 82,
 	bloodGlucose: null
 };
 
@@ -56,16 +58,17 @@ describe('UserController (e2e)', () => {
 			imports: [AppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 		server = app.getHttpServer();
 		app.init();
 		userId = (await request(server).post('/auth/register').send(registerDto)).body.id;
-		token = (await request(server).post('/auth/login').send(loginDto)).text;
+		token = (await request(server).post('/auth/login').send(loginDto)).body.token;
 	});
 
 	describe('/user/account (GET)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).get('/user/account').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Ok (success)', async () => {
@@ -84,7 +87,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, birth: new Date(1899, 0, 1) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.MIN_DATE_BIRTH);
+			expect(res.body.message[0]).toBe(UserDtoErrors.MIN_DATE_BIRTH.en);
 		});
 
 		it('Is not date (fail)', async () => {
@@ -93,7 +96,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, birth: '' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE.en);
 		});
 
 		it('Is not string (fail)', async () => {
@@ -102,7 +105,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, firstName: true })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING.en);
 		});
 
 		it('Long name (fail)', async () => {
@@ -111,7 +114,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, firstName: 'a'.repeat(21) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_NAME);
+			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_NAME.en);
 		});
 
 		it('Long cityname (fail)', async () => {
@@ -120,7 +123,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, city: 'a'.repeat(21) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_CITYNAME);
+			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_CITYNAME.en);
 		});
 
 		it('Invalid sex (fail)', async () => {
@@ -129,12 +132,12 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, sex: 'Bisexual' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_SEX);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_SEX.en);
 		});
 
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post('/user/profile').send(createProfileDto).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Created (seccess)', async () => {
@@ -154,7 +157,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createUnitsDto, height: '' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_INT);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_INT.en);
 		});
 
 		it('Invalid height (fail)', async () => {
@@ -163,7 +166,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createUnitsDto, height: -10 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_HEIGHT);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_HEIGHT.en);
 		});
 
 		it('Invalid weight (fail)', async () => {
@@ -172,7 +175,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createProfileDto, weight: 500 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_WEIGHT);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_WEIGHT.en);
 		});
 
 		it('Invalid blood glucose (fail)', async () => {
@@ -181,12 +184,12 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createUnitsDto, bloodGlucose: -100 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_BLOOD_GLUCOSE);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_BLOOD_GLUCOSE.en);
 		});
 
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post('/user/units').send(createUnitsDto).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Already exist (fail)', async () => {
@@ -199,7 +202,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createUnitsDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST);
+			expect(res.body.message).toBe(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST.en);
 		});
 
 		it('Created (seccess)', async () => {
@@ -219,7 +222,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createGoalDto, type: 0 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_TYPE);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_TYPE.en);
 		});
 
 		it('Invalid activity', async () => {
@@ -228,12 +231,12 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createGoalDto, activity: 0 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_ACTIVITY);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_ACTIVITY.en);
 		});
 
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post('/user/goal').send(createGoalDto).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Profile is required (fail)', async () => {
@@ -246,7 +249,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createGoalDto)
 				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
-			expect(res.body.message).toBe(UserErrorMessages.PROFILE_IS_REQUIRED);
+			expect(res.body.message).toBe(UserErrorMessages.PROFILE_IS_REQUIRED.en);
 		});
 
 		it('Units is required (fail)', async () => {
@@ -259,7 +262,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createGoalDto)
 				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
-			expect(res.body.message).toBe(UserErrorMessages.UNITS_IS_REQUIRED);
+			expect(res.body.message).toBe(UserErrorMessages.UNITS_IS_REQUIRED.en);
 		});
 
 		it('Already exist (fail)', async () => {
@@ -280,7 +283,7 @@ describe('UserController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createGoalDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(UserErrorMessages.GOAL_ALREADY_EXIST);
+			expect(res.body.message).toBe(UserErrorMessages.GOAL_ALREADY_EXIST.en);
 		});
 
 		it('Created (seccess)', async () => {

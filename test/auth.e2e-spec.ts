@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { NestApplication } from '@nestjs/core';
+import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { UserModel } from '@prisma/client';
 import { Server } from 'http';
@@ -9,6 +9,7 @@ import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import { DatabaseService } from 'src/database/database.service';
+import { ExceptionFilter } from 'src/filters/exception.filter';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import * as request from 'supertest';
 
@@ -24,7 +25,6 @@ const registerDto: AuthRegisterDto = {
 
 describe('AuthController (e2e)', () => {
 	let userId: string;
-	let token: string;
 	let app: NestApplication;
 	let server: Server;
 
@@ -33,6 +33,7 @@ describe('AuthController (e2e)', () => {
 			imports: [AppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 		server = app.getHttpServer();
 		app.init();
 	});
@@ -43,7 +44,7 @@ describe('AuthController (e2e)', () => {
 				.post('/auth/register')
 				.send({ ...registerDto, email: 'email' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_EMAIL);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_EMAIL.en);
 		});
 
 		it('Created (success)', async () => {
@@ -55,7 +56,7 @@ describe('AuthController (e2e)', () => {
 
 		it('Already exist (fail)', async () => {
 			const res = await request(server).post('/auth/register').send(registerDto).expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(AuthErrorMessages.ALREADY_EXIST);
+			expect(res.body.message).toBe(AuthErrorMessages.ALREADY_EXIST.en);
 		});
 	});
 
@@ -65,7 +66,7 @@ describe('AuthController (e2e)', () => {
 				.post('/auth/login')
 				.send({ ...loginDto, email: 'email' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_EMAIL);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_EMAIL.en);
 		});
 
 		it('Not found (fail)', async () => {
@@ -73,7 +74,7 @@ describe('AuthController (e2e)', () => {
 				.post('/auth/login')
 				.send({ ...loginDto, email: `a${loginDto.email}` })
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(AuthErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(AuthErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Wrong password (fail)', async () => {
@@ -81,13 +82,12 @@ describe('AuthController (e2e)', () => {
 				.post('/auth/login')
 				.send({ ...loginDto, password: `${loginDto.password}a` })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message).toBe(AuthErrorMessages.WRONG_PASSWORD);
+			expect(res.body.message).toBe(AuthErrorMessages.WRONG_PASSWORD.en);
 		});
 
 		it('Logined (success)', async () => {
 			const res = await request(server).post('/auth/login').send(loginDto).expect(HttpStatus.OK);
 			expect(res.text).toBeDefined();
-			token = res.text;
 		});
 	});
 
