@@ -17,16 +17,16 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRecipeDto {
 	@IsEmpty()
-	id: number;
+	id?: number;
 
 	@IsEmpty()
-	createdAt: Date;
+	createdAt?: Date;
 
 	@IsEmpty()
-	updatedAt: Date;
+	updatedAt?: Date;
 
 	@IsEmpty()
-	userId: string;
+	userId?: string;
 
 	@ApiProperty({ minLength: 1, maxLength: 40 })
 	@MaxLength(40, { message: RecipeDtoErrors.MAX_LENGTH_TITLE.en })

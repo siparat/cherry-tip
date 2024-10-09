@@ -5,13 +5,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthRegisterDto {
 	@IsEmpty()
-	id: number;
+	id?: number;
 
 	@IsEmpty()
-	createdAt: Date;
+	createdAt?: Date;
 
 	@IsEmpty()
-	updatedAt: Date;
+	updatedAt?: Date;
 
 	@ApiProperty({ example: 'a@a.ru' })
 	@IsEmail({}, { message: CommonDtoErrors.IS_NOT_EMAIL.en })

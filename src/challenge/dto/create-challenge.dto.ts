@@ -17,16 +17,16 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateChallengeDto {
 	@IsEmpty()
-	id: number;
+	id?: number;
 
 	@IsEmpty()
-	createdAt: Date;
+	createdAt?: Date;
 
 	@IsEmpty()
-	updatedAt: Date;
+	updatedAt?: Date;
 
 	@IsEmpty()
-	userChallenge: unknown;
+	userChallenge?: unknown;
 
 	@ApiProperty({ minLength: 1, maxLength: 24 })
 	@MaxLength(24, { message: ChallengeDtoErrors.MAX_LENGTH_TITLE.en })

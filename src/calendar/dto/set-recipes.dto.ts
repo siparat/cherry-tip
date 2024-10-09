@@ -1,5 +1,5 @@
 import { CategoryEnum } from '@prisma/client';
-import { IsArray, IsDate, IsEnum, IsInt, MaxDate } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsInt } from 'class-validator';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import { CalendarDtoErrors } from '../calendar.constants';
 import { Type } from 'class-transformer';
