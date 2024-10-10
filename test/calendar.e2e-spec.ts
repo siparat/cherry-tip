@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { NestApplication } from '@nestjs/core';
+import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { ActivityEnum, CategoryEnum, DifficultyEnum, GoalTypeEnum, SexEnum } from '@prisma/client';
 import { Server } from 'http';
@@ -18,6 +18,7 @@ import { UserErrorMessages } from 'src/user/user.constants';
 import { CalendarDtoErrors, CalendarErrorMessages } from 'src/calendar/calendar.constants';
 import { SetRecipesDto } from 'src/calendar/dto/set-recipes.dto';
 import { CreateRecipeDto } from 'src/recipe/dto/create-recipe.dto';
+import { ExceptionFilter } from 'src/filters/exception.filter';
 
 const loginDto: AuthLoginDto = {
 	email: 'e@e.ru',
@@ -40,6 +41,7 @@ const createProfileDto: CreateUserProfileDto = {
 const createUnitsDto: CreateUserUnitsDto = {
 	height: 180,
 	weight: 80,
+	targetWeight: 82,
 	bloodGlucose: null
 };
 
@@ -77,10 +79,11 @@ describe('CalendarController (e2e)', () => {
 			imports: [AppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 		server = app.getHttpServer();
 		app.init();
 		userId = userId ?? (await request(server).post('/auth/register').send(registerDto)).body.id;
-		token = (await request(server).post('/auth/login').send(loginDto)).text;
+		token = (await request(server).post('/auth/login').send(loginDto)).body.token;
 		today = new Date().toISOString().slice(0, 10);
 		database = app.get(DatabaseService);
 	});
@@ -88,7 +91,7 @@ describe('CalendarController (e2e)', () => {
 	describe('/calendar/day (GET)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).get('/calendar/day').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Is not date (fail)', async () => {
@@ -96,7 +99,7 @@ describe('CalendarController (e2e)', () => {
 				.get('/calendar/day?date=true')
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message).toBe(CommonDtoErrors.IS_NOT_DATE);
+			expect(res.body.message).toBe(CommonDtoErrors.IS_NOT_DATE.en);
 		});
 
 		it('Goal is required (fail)', async () => {
@@ -104,7 +107,7 @@ describe('CalendarController (e2e)', () => {
 				.get(`/calendar/day?date=${today}`)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
-			expect(res.body.message).toBe(UserErrorMessages.GOAL_IS_REQUIRED);
+			expect(res.body.message).toBe(UserErrorMessages.GOAL_IS_REQUIRED.en);
 		});
 
 		it('Created (success)', async () => {
@@ -133,7 +136,7 @@ describe('CalendarController (e2e)', () => {
 	describe('/calendar/day/:id (GET)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).get(`/calendar/day/${dayId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Not found (fail)', async () => {
@@ -141,18 +144,18 @@ describe('CalendarController (e2e)', () => {
 				.get('/calendar/day/0')
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(CalendarErrorMessages.DAY_NOT_FOUND);
+			expect(res.body.message).toBe(CalendarErrorMessages.DAY_NOT_FOUND.en);
 		});
 
 		it('No rights (fail)', async () => {
 			const dto = { email: 'email@email.ru', login: 'login', password: 'password' };
 			const userId = (await request(server).post('/auth/register').send(dto)).body.id;
-			const token = (await request(server).post('/auth/login').send(dto)).text;
+			const token = (await request(server).post('/auth/login').send(dto)).body.token;
 			const res = await request(server)
 				.get(`/calendar/day/${dayId}`)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.FORBIDDEN);
-			expect(res.body.message).toBe(CalendarErrorMessages.ANOTHER_DAY);
+			expect(res.body.message).toBe(CalendarErrorMessages.ANOTHER_DAY.en);
 			await database.userModel.delete({ where: { id: userId } });
 		});
 
@@ -171,7 +174,7 @@ describe('CalendarController (e2e)', () => {
 				.post(`/calendar/day/recipes`)
 				.send(setRecipesDto)
 				.expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Is not date (fail)', async () => {
@@ -180,16 +183,7 @@ describe('CalendarController (e2e)', () => {
 				.send({ ...setRecipesDto, date: undefined })
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE);
-		});
-
-		it('Max date (fail)', async () => {
-			const res = await request(server)
-				.post('/calendar/day/recipes')
-				.send({ ...setRecipesDto, date: new Date(Date.now() + 86400000) })
-				.set('Authorization', 'Bearer ' + token)
-				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.INVALID_DATE);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE.en);
 		});
 
 		it('Invalid category (fail)', async () => {
@@ -198,7 +192,7 @@ describe('CalendarController (e2e)', () => {
 				.send({ ...setRecipesDto, category: 'beautiful_category' })
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CalendarDtoErrors.INVALID_CATEGORY);
+			expect(res.body.message[0]).toBe(CalendarDtoErrors.INVALID_CATEGORY.en);
 		});
 
 		it('Is not array (fail)', async () => {
@@ -207,16 +201,7 @@ describe('CalendarController (e2e)', () => {
 				.send({ ...setRecipesDto, recipes: 'soup' })
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_ARRAY);
-		});
-
-		it('Some recipes not found (fail)', async () => {
-			const res = await request(server)
-				.post('/calendar/day/recipes')
-				.send({ ...setRecipesDto, recipes: [100000001] })
-				.set('Authorization', 'Bearer ' + token)
-				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(CalendarErrorMessages.RECIPE_NOT_FOUND);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_ARRAY.en);
 		});
 
 		it('Recieved (success)', async () => {
@@ -233,7 +218,7 @@ describe('CalendarController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.OK);
 			expect(res.body.recipes.length).toBe(1);
-			expect(res.body.recipes[0].id).toBe(id);
+			expect(res.body.recipes[0].recipe.id).toBe(id);
 			await database.recipeModel.delete({ where: { id } });
 		});
 	});

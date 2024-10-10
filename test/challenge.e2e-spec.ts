@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { NestApplication } from '@nestjs/core';
+import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { DifficultyEnum, RoleEnum } from '@prisma/client';
 import { Server } from 'http';
@@ -14,6 +14,7 @@ import { CreateChallengeDto } from 'src/challenge/dto/create-challenge.dto';
 import { ChallengeDtoErrors, ChallengeErrorMessages } from 'src/challenge/challenge.constants';
 import { CommonDtoErrors } from 'src/common/common.constants';
 import { UserErrorMessages } from 'src/user/user.constants';
+import { ExceptionFilter } from 'src/filters/exception.filter';
 
 const loginDto: AuthLoginDto = {
 	email: 'd@d.ru',
@@ -53,10 +54,11 @@ describe('ChallengeController (e2e)', () => {
 			imports: [AppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
 		server = app.getHttpServer();
 		app.init();
 		userId = userId ?? (await request(server).post('/auth/register').send(registerDto)).body.id;
-		token = (await request(server).post('/auth/login').send(loginDto)).text;
+		token = (await request(server).post('/auth/login').send(loginDto)).body.token;
 		database = app.get(DatabaseService);
 		await database.userModel.update({ where: { id: userId }, data: { role: RoleEnum.Admin } });
 	});
@@ -64,7 +66,7 @@ describe('ChallengeController (e2e)', () => {
 	describe('/challenge (POST)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post('/challenge').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Only admins allowed (fail)', async () => {
@@ -74,7 +76,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createChallengeDto)
 				.expect(HttpStatus.FORBIDDEN);
-			expect(res.body.message).toBe(UserErrorMessages.FORBIDDEN_ROLE);
+			expect(res.body.message).toBe(UserErrorMessages.FORBIDDEN_ROLE.en);
 		});
 
 		it('Title is long (fail)', async () => {
@@ -83,7 +85,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, title: 'a'.repeat(25) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_TITLE);
+			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_TITLE.en);
 		});
 
 		it('Description is long (fail)', async () => {
@@ -92,7 +94,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, description: 'a'.repeat(501) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_DESCRIPTION);
+			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_DESCRIPTION.en);
 		});
 
 		it('Is not url (fail)', async () => {
@@ -101,7 +103,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, image: 'WW image' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_URL);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_URL.en);
 		});
 
 		it('Is not hex (fail)', async () => {
@@ -110,7 +112,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, color: 'black' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_HEX);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_HEX.en);
 		});
 
 		it('Incorrect difficulty (fail)', async () => {
@@ -119,7 +121,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, difficulty: 'ok' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(ChallengeDtoErrors.INCORRECT_DIFFICULT);
+			expect(res.body.message[0]).toBe(ChallengeDtoErrors.INCORRECT_DIFFICULT.en);
 		});
 
 		it('Is not array (fail)', async () => {
@@ -128,7 +130,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, tips: 'Clear your house of sweets' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_ARRAY);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_ARRAY.en);
 		});
 
 		it('Is not string (fail)', async () => {
@@ -137,7 +139,7 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({ ...createChallengeDto, tips: [0, 1, 2] })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING.en);
 		});
 
 		it('Created (success)', async () => {
@@ -160,14 +162,14 @@ describe('ChallengeController (e2e)', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send(createChallengeDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
 		});
 	});
 
 	describe('/challenge/:id (GET)', () => {
 		it('Not found (fail)', async () => {
 			const res = await request(server).get('/challenge/-1').expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Received (success)', async () => {
@@ -182,12 +184,12 @@ describe('ChallengeController (e2e)', () => {
 				.post('/challenge/-1/start')
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post(`/challenge/${challengeId}/start`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Started (success)', async () => {
@@ -203,7 +205,7 @@ describe('ChallengeController (e2e)', () => {
 				.post(`/challenge/${challengeId}/start`)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_STARTED);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_STARTED.en);
 		});
 	});
 
@@ -213,12 +215,12 @@ describe('ChallengeController (e2e)', () => {
 				.post('/challenge/-1/cancel')
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).post(`/challenge/${challengeId}/cancel`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Canceled (success)', async () => {
@@ -234,7 +236,7 @@ describe('ChallengeController (e2e)', () => {
 				.post(`/challenge/${challengeId}/cancel`)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_CANCELED);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_CANCELED.en);
 		});
 	});
 
@@ -244,12 +246,12 @@ describe('ChallengeController (e2e)', () => {
 				.get('/challenge/-1/status')
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).get(`/challenge/${challengeId}/status`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Recieved (success)', async () => {
@@ -264,7 +266,7 @@ describe('ChallengeController (e2e)', () => {
 	describe('/challenge/:id (PUT)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).put(`/challenge/${challengeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Not found (fail)', async () => {
@@ -273,7 +275,7 @@ describe('ChallengeController (e2e)', () => {
 				.send(createChallengeDto)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Titles match (fail)', async () => {
@@ -293,7 +295,7 @@ describe('ChallengeController (e2e)', () => {
 
 			await database.challengeModel.delete({ where: { id } });
 
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
 		});
 
 		it('Edited (success)', async () => {
@@ -309,7 +311,7 @@ describe('ChallengeController (e2e)', () => {
 	describe('/challenge/:id (DELETE)', () => {
 		it('Unauthorized (fail)', async () => {
 			const res = await request(server).delete(`/challenge/${challengeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
 		});
 
 		it('Not found (fail)', async () => {
@@ -317,7 +319,7 @@ describe('ChallengeController (e2e)', () => {
 				.delete(`/challenge/-1`)
 				.set('Authorization', 'Bearer ' + token)
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
 		});
 
 		it('Deleted (success)', async () => {
