@@ -61,7 +61,7 @@ export class RecipeService {
 	}
 
 	async saveImage(file: Express.Multer.File): Promise<string> {
-		const name = randomUUID() + '.avif';
+		const name = randomUUID() + '.webp';
 		const buffer = await this.fileService.toAvif(file.buffer);
 		const url = await this.fileService.writeFile(name, buffer);
 		return url;

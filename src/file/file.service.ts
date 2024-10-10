@@ -26,6 +26,6 @@ export class FileService {
 	}
 
 	async toAvif(buffer: Buffer): Promise<Buffer> {
-		return await sharp(buffer).avif({ quality: 75 }).toBuffer();
+		return await sharp(buffer).webp({ quality: 75 }).toBuffer();
 	}
 }
