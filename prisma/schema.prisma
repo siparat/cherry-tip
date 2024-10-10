@@ -51,9 +51,9 @@ model UnitsModel {
 }
 
 model RecipeModel {
-    id          Int               @id @default(autoincrement())
-    createdAt   DateTime          @default(now())
-    updatedAt   DateTime          @updatedAt
+    id          Int                         @id @default(autoincrement())
+    createdAt   DateTime                    @default(now())
+    updatedAt   DateTime                    @updatedAt
     title       String
     description String?
     image       String
@@ -61,8 +61,8 @@ model RecipeModel {
     calories    Int
     cookingTime Int?
     difficulty  DifficultyEnum?
-    days        DayRecipesModel[]
-    user        UserModel?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+    days        DayMealModelToRecipeModel[]
+    user        UserModel?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
     userId      String?
 
     protein Decimal
@@ -134,8 +134,8 @@ model GoalModel {
 }
 
 model DayModel {
-    id           Int               @id @default(autoincrement())
-    date         DateTime          @default(now())
+    id           Int            @id @default(autoincrement())
+    date         DateTime       @default(now())
     goal         GoalTypeEnum
     needCalories Int
     protein      Int
@@ -145,18 +145,26 @@ model DayModel {
     lunch        Int
     dinner       Int
     snack        Int
-    recipes      DayRecipesModel[]
+    meals        DayMealModel[]
 
     userId String
     user   UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model DayRecipesModel {
+model DayMealModelToRecipeModel {
+    id        Int          @id @default(autoincrement())
+    dayMealId Int
+    dayMeal   DayMealModel @relation(fields: [dayMealId], references: [id], onDelete: Cascade)
+    recipeId  Int
+    recipe    RecipeModel  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model DayMealModel {
     id Int @id @default(autoincrement())
 
-    recipes  RecipeModel[]
+    recipes  DayMealModelToRecipeModel[]
     category CategoryEnum
-    day      DayModel      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+    day      DayModel                    @relation(fields: [dayId], references: [id], onDelete: Cascade)
     dayId    Int
 }
 

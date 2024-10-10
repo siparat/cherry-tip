@@ -2,7 +2,7 @@ import { GoalTypeEnum } from '@prisma/client';
 import { IDayEntity } from '../calendar.interfaces';
 import { UserErrorMessages } from 'src/user/user.constants';
 import { GoalEntity } from 'src/user/entities/goal.entity';
-import { DayRecipesEntity } from './day-recipes.entity';
+import { DayMealEntity } from './day-meal.entity';
 import { UnprocessableEntityException } from '@nestjs/common';
 import { resetDateTime } from 'src/helpers/date.helpers';
 
@@ -19,7 +19,7 @@ export class DayEntity {
 	dinner: number;
 	snack: number;
 	userId: string;
-	recipes: DayRecipesEntity[];
+	meal: DayMealEntity[];
 
 	constructor(day: IDayEntity) {
 		const isInstanceModel = !('user' in day);
@@ -48,8 +48,8 @@ export class DayEntity {
 		this.snack = day.snack ?? this.needCalories - (this.breakfast + this.lunch + this.dinner);
 	}
 
-	setRecipes(entities: DayRecipesEntity[]): this {
-		this.recipes = entities;
+	setRecipes(entities: DayMealEntity[]): this {
+		this.meal = entities;
 		return this;
 	}
 }

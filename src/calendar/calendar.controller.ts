@@ -14,7 +14,7 @@ import {
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common';
-import { DayModel, DayRecipesModel, RoleEnum, UserModel } from '@prisma/client';
+import { DayModel, DayMealModel, RoleEnum, UserModel } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CalendarService } from './calendar.service';
 import { User } from 'src/decorators/user.decorator';
@@ -54,7 +54,7 @@ export class CalendarController {
 	@UseGuards(JwtAuthGuard)
 	@HttpCode(HttpStatus.OK)
 	@Post('day/recipes')
-	async setRecipes(@Body() dto: SetRecipesDto, @User() user: UserModel): Promise<DayRecipesModel> {
+	async setRecipes(@Body() dto: SetRecipesDto, @User() user: UserModel): Promise<DayMealModel> {
 		return this.calendarService.setRecipes(user, dto);
 	}
 }

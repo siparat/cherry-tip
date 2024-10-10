@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CategoryEnum, DayRecipesModel } from '@prisma/client';
+import { CategoryEnum, DayMealModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { DayEntity } from '../entities/day.entity';
 import { CalendarErrorMessages } from '../calendar.constants';
@@ -8,8 +8,14 @@ import { resetDateTime } from 'src/helpers/date.helpers';
 
 export const getNutrionsFromDayRecipes = () =>
 	({
-		recipes: {
-			include: { recipes: { select: { id: true, calories: true, protein: true, fat: true, carbs: true } } }
+		meals: {
+			include: {
+				recipes: {
+					select: {
+						recipe: { select: { id: true, protein: true, fat: true, carbs: true, calories: true } }
+					}
+				}
+			}
 		}
 	}) as const;
 
@@ -28,7 +34,7 @@ export class DayRepository {
 		return this.database.dayModel.create({
 			data: {
 				...entity,
-				recipes: {
+				meals: {
 					createMany: {
 						data: [
 							{ category: CategoryEnum.Breakfast },
@@ -51,17 +57,37 @@ export class DayRepository {
 		});
 	}
 
-	getDayRecipeByDate(date: Date, category: CategoryEnum): Promise<DayRecipesModel | null> {
+	getDayMealByDate(date: Date, category: CategoryEnum): Promise<DayMealModel | null> {
 		date = resetDateTime(date);
-		return this.database.dayRecipesModel.findFirst({ where: { category, day: { date } } });
+		return this.database.dayMealModel.findFirst({ where: { category, day: { date } } });
 	}
 
-	async setRecipes(dayRecipesId: number, recipesId: number[]): Promise<DayRecipesModel> {
+	async createDayRecipe(dayMealId: number, recipeId: number): Promise<number | null> {
 		try {
-			return await this.database.dayRecipesModel.update({
-				where: { id: dayRecipesId },
-				data: { recipes: { connect: recipesId.map((id) => ({ id })) } },
-				include: { recipes: true }
+			const { id } = await this.database.dayMealModelToRecipeModel.create({ data: { dayMealId, recipeId } });
+			return id;
+		} catch (error) {
+			return null;
+		}
+	}
+
+	async setRecipes(dayMealId: number, recipesId: number[]): Promise<DayMealModel> {
+		const createdDayRecipesId: { id: number }[] = [];
+
+		await this.database.dayMealModelToRecipeModel.deleteMany({ where: { dayMealId: dayMealId } });
+
+		for (const id of recipesId) {
+			const resultId = await this.createDayRecipe(dayMealId, id);
+			if (!resultId) {
+				continue;
+			}
+			createdDayRecipesId.push({ id: resultId });
+		}
+
+		try {
+			return await this.database.dayMealModel.findUniqueOrThrow({
+				where: { id: dayMealId },
+				include: { recipes: { select: { recipe: true } } }
 			});
 		} catch (error) {
 			throw new NotFoundException(CalendarErrorMessages.RECIPE_NOT_FOUND);
