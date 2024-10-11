@@ -17,7 +17,8 @@ import { path } from 'app-root-path';
 		ChallengeModule,
 		CalendarModule,
 		ConfigModule.forRoot({ isGlobal: true }),
-		ServeStaticModule.forRoot({ rootPath: `${join(path, 'uploads')}`, serveRoot: '/uploads' })
+		ServeStaticModule.forRoot({ rootPath: `${join(path, 'uploads')}`, serveRoot: '/uploads' }),
+		ServeStaticModule.forRoot({ rootPath: `${join(path, 'assets')}`, serveRoot: '/assets' })
 	]
 })
 export class AppModule {}

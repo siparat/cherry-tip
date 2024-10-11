@@ -11,6 +11,7 @@ WORKDIR /opt/app
 ADD package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /opt/app/dist ./dist
+COPY --from=build /opt/app/assets ./assets
 COPY --from=build /opt/app/prisma ./prisma
 RUN npm run generate
 CMD ["npm", "run", "start:prod"]
