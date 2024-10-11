@@ -12,6 +12,7 @@ export const getNutrionsFromDayRecipes = () =>
 			include: {
 				recipes: {
 					select: {
+						id: true,
 						recipe: { select: { id: true, protein: true, fat: true, carbs: true, calories: true } }
 					}
 				}
@@ -87,7 +88,7 @@ export class DayRepository {
 		try {
 			return await this.database.dayMealModel.findUniqueOrThrow({
 				where: { id: dayMealId },
-				include: { recipes: { select: { recipe: true } } }
+				include: { recipes: { select: { id: true, recipe: true } } }
 			});
 		} catch (error) {
 			throw new NotFoundException(CalendarErrorMessages.RECIPE_NOT_FOUND);
