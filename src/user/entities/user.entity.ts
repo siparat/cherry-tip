@@ -75,13 +75,10 @@ export class UserEntity {
 		if (!this.goal) {
 			throw new UnprocessableEntityException(UserErrorMessages.GOAL_IS_REQUIRED);
 		}
-		const proteinCoefficient = 2.2 * NutrientValues.PROTEIN;
-		const fatCoefficient = 0.9 * NutrientValues.FAT;
-		const carbsCoefficient = 3.1 * NutrientValues.CARBS;
 
-		const protein = (this.goal.calorieGoal * 0.3) / proteinCoefficient;
-		const fat = (this.goal.calorieGoal * 0.25) / fatCoefficient;
-		const carbs = (this.goal.calorieGoal * 0.45) / carbsCoefficient;
+		const protein = (this.goal.calorieGoal * 0.3) / NutrientValues.PROTEIN;
+		const fat = (this.goal.calorieGoal * 0.25) / NutrientValues.FAT;
+		const carbs = (this.goal.calorieGoal * 0.45) / NutrientValues.CARBS;
 
 		return { protein, carbs, fat };
 	}
