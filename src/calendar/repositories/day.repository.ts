@@ -58,9 +58,9 @@ export class DayRepository {
 		});
 	}
 
-	getDayMealByDate(date: Date, category: CategoryEnum): Promise<DayMealModel | null> {
+	getMealByDate(date: Date, category: CategoryEnum, userId: string): Promise<DayMealModel | null> {
 		date = resetDateTime(date);
-		return this.database.dayMealModel.findFirst({ where: { category, day: { date } } });
+		return this.database.dayMealModel.findFirst({ where: { category, day: { date, userId } } });
 	}
 
 	async createDayRecipe(dayMealId: number, recipeId: number): Promise<number | null> {

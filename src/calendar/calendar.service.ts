@@ -28,7 +28,7 @@ export class CalendarService {
 		if (!existedDay) {
 			await this.createDay(user, dto.date);
 		}
-		const recipeDay = await this.dayRepository.getDayMealByDate(dto.date, dto.category);
+		const recipeDay = await this.dayRepository.getMealByDate(dto.date, dto.category, user.id);
 		if (!recipeDay) {
 			throw new BadRequestException(CalendarErrorMessages.DAY_NOT_FOUND);
 		}
