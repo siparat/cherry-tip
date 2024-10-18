@@ -20,6 +20,10 @@ export const AuthErrorMessages: ErrorsType = {
 };
 
 export const AuthDtoErrors: ErrorsType = {
+	INVALID_SYMBOLS: {
+		ru: 'Пароль должен содержать только цифры, буквы и специальные символы',
+		en: 'The password must contain only numbers, letters and special characters'
+	},
 	MAX_LENGTH_LOGIN: {
 		ru: 'Максимальная длина логина – 20',
 		en: 'The maximum login length is 20'

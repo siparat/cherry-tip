@@ -1,4 +1,8 @@
 export const CommonDtoErrors = {
+	LATIN_ONLY: {
+		ru: 'Разрешено использовать только латинские буквы и цифры',
+		en: 'It is allowed to use only Latin letters and numbers'
+	},
 	INVALID_DATE: {
 		ru: 'Укажите валидную дату',
 		en: 'Specify a valid date'
