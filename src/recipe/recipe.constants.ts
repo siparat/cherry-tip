@@ -19,6 +19,10 @@ export const RecipeErrorMessages: ErrorsType = {
 		ru: 'Категория с таким id не найдена',
 		en: 'The category with this ID was not found'
 	},
+	FORBIDDEN_VIEW_RECIPE: {
+		ru: 'Запрещено просматривать чужой рецепт',
+		en: "It is forbidden to view someone else's recipe"
+	},
 	FORBIDDEN_EDIT_RECIPE: {
 		ru: 'Запрещено редактировать чужой рецепт',
 		en: "It is forbidden to edit someone else's recipe"

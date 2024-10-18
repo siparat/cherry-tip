@@ -7,9 +7,11 @@ import { RecipeCategoryRepository } from './repositories/recipe-category.reposit
 import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
 import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
 import { FileModule } from 'src/file/file.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-	imports: [DatabaseModule, FileModule],
+	imports: [DatabaseModule, FileModule, AuthModule, UserModule],
 	controllers: [RecipeController],
 	providers: [
 		RecipeService,

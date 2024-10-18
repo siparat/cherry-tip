@@ -6,12 +6,14 @@ import {
 	ForbiddenException,
 	Get,
 	Header,
+	Headers,
 	NotFoundException,
 	Param,
 	ParseIntPipe,
 	Post,
 	Put,
 	Query,
+	UnauthorizedException,
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
@@ -36,10 +38,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { MimeTypePipe } from 'src/pipes/mime-type-category.pipe';
 import { CommonErrorMessages } from 'src/common/common.constants';
 import { FileSizePipe } from 'src/pipes/file-size.pipe';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthErrorMessages } from 'src/auth/auth.constants';
+import { UserRepository } from 'src/user/repositories/user.repository';
 
 @Controller('recipe')
 export class RecipeController {
 	constructor(
+		private authService: AuthService,
+		private userRepository: UserRepository,
 		private recipeService: RecipeService,
 		private recipeRepository: RecipeRepository,
 		private recipeCategoryRepository: RecipeCategoryRepository,
@@ -97,10 +104,25 @@ export class RecipeController {
 	}
 
 	@Get(':id')
-	async getRecipeById(@Param('id', new ParseIntPipe({ optional: true })) id: number): Promise<RecipeModel> {
+	async getRecipeById(
+		@Param('id', new ParseIntPipe({ optional: true })) id: number,
+		@Headers('Authorization') token: string = ''
+	): Promise<RecipeModel> {
 		const recipe = await this.recipeRepository.findById(id);
 		if (!recipe) {
 			throw new NotFoundException(RecipeErrorMessages.NOT_FOUND);
+		}
+		if (!recipe.userId) {
+			return recipe;
+		}
+		const payload = await this.authService.authenticationToken(token.slice(7));
+		if (!payload) {
+			throw new UnauthorizedException(AuthErrorMessages.UNAUTHORIZED);
+		}
+
+		const user = await this.userRepository.findByEmail(payload.email);
+		if (!user || (user.id !== recipe.userId && user.role !== RoleEnum.Admin)) {
+			throw new ForbiddenException(RecipeErrorMessages.FORBIDDEN_VIEW_RECIPE);
 		}
 		return recipe;
 	}

@@ -16,7 +16,8 @@ export class RecipeRepository {
 				title: { mode: 'insensitive', contains: q },
 				categoryId: tags?.categoryId,
 				preparationId: tags?.preparationId,
-				dietsTypeId: tags?.dietsTypeId
+				dietsTypeId: tags?.dietsTypeId,
+				userId: null
 			}
 		});
 	}
