@@ -38,11 +38,13 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "fs-extra": "^11.2.0",
+    "nestjs-telegraf": "^2.8.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "telegraf": "^4.16.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
