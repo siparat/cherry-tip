@@ -1,7 +1,7 @@
 import { SexEnum } from '@prisma/client';
 import { ErrorsType } from 'src/common/common.interfaces';
 
-export const UserErrorMessages: ErrorsType = {
+export const UserErrorMessages = {
 	NOT_FOUND: {
 		ru: 'Пользователь с таким id не найден',
 		en: 'The user with this ID was not found'
@@ -42,9 +42,9 @@ export const UserErrorMessages: ErrorsType = {
 		ru: 'Сначала создайте профиль',
 		en: 'First, create a profile'
 	}
-};
+} satisfies ErrorsType;
 
-export const UserDtoErrors: ErrorsType = {
+export const UserDtoErrors = {
 	MAX_DATE_BIRTH: {
 		ru: 'Указан невалидный возраст',
 		en: 'Invalid age is specified'
@@ -85,4 +85,4 @@ export const UserDtoErrors: ErrorsType = {
 		ru: `Указан не валидный пол, выберите ${Object.keys(SexEnum).join(' или ')}`,
 		en: `Invalid gender is specified, select ${Object.keys(SexEnum).join(' or ')}`
 	}
-};
+} satisfies ErrorsType;

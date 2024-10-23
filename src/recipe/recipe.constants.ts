@@ -6,7 +6,7 @@ export const NutrientValues = {
 	FAT: 9
 };
 
-export const RecipeErrorMessages: ErrorsType = {
+export const RecipeErrorMessages = {
 	ALREADY_EXIST_WITH_THIS_NAME: {
 		ru: 'Рецепт с таким названием уже есть, укажите другое название',
 		en: 'There is already a recipe with this name, please specify another name'
@@ -31,9 +31,9 @@ export const RecipeErrorMessages: ErrorsType = {
 		ru: 'Запрещено удалять чужой рецепт',
 		en: "It is forbidden to delete someone else's recipe"
 	}
-};
+} satisfies ErrorsType;
 
-export const RecipeDtoErrors: ErrorsType = {
+export const RecipeDtoErrors = {
 	MAX_LENGTH_TITLE: {
 		ru: 'Максимальная длина названия – 40',
 		en: 'The maximum length of the name is 40'
@@ -54,4 +54,4 @@ export const RecipeDtoErrors: ErrorsType = {
 		ru: 'Укажите верную сложность приготовления',
 		en: 'Specify the correct cooking difficulty'
 	}
-};
+} satisfies ErrorsType;
