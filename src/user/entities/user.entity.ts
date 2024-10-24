@@ -12,6 +12,7 @@ import { NutrientValues } from 'src/recipe/recipe.constants';
 
 export class UserEntity {
 	id?: string;
+	tgId?: number;
 	email: string;
 	passwordHash: string;
 	login: string;
@@ -20,8 +21,9 @@ export class UserEntity {
 	units?: UnitsEntity;
 	goal?: GoalEntity;
 
-	constructor({ id, login, email, passwordHash, role }: IUserEntity) {
+	constructor({ id, login, email, passwordHash, role, tgId }: IUserEntity) {
 		this.id = id;
+		this.tgId = tgId ?? undefined;
 		this.email = email;
 		this.passwordHash = passwordHash;
 		this.login = login;

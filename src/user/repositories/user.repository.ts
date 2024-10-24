@@ -25,6 +25,10 @@ export class UserRepository {
 		});
 	}
 
+	findByTgId(tgId: number): Promise<UserModel | null> {
+		return this.database.userModel.findUnique({ where: { tgId } });
+	}
+
 	async findAccountById(id: string): Promise<IAccount | null> {
 		const account = await this.database.userModel.findUnique({
 			where: { id },
