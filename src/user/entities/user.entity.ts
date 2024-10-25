@@ -88,6 +88,7 @@ export class UserEntity {
 	getMainInfo(): IUserEntity {
 		return {
 			id: this.id,
+			tgId: this.tgId,
 			login: this.login,
 			email: this.email,
 			passwordHash: this.passwordHash,

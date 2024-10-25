@@ -15,12 +15,12 @@ export class AuthService {
 		private jwtService: JwtService
 	) {}
 
-	async createUser({ email, login, password }: AuthRegisterDto): Promise<UserModel> {
-		const existedUser = await this.userRepository.findUniqueUser(email, login);
+	async createUser({ email, login, password }: AuthRegisterDto, tgId?: number): Promise<UserModel> {
+		const existedUser = await this.userRepository.findUniqueUser(email, login, tgId);
 		if (existedUser) {
 			throw new ConflictException(AuthErrorMessages.ALREADY_EXIST);
 		}
-		const entity = new UserEntity({ email, login, passwordHash: '', role: RoleEnum.User });
+		const entity = new UserEntity({ email, login, passwordHash: '', role: RoleEnum.User, tgId });
 		await entity.setPassword(password);
 		const user = await this.userRepository.createUser(entity);
 		return user;
