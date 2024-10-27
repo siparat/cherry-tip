@@ -1,6 +1,6 @@
 import { Ctx, Start, Update } from 'nestjs-telegraf';
 import { Context } from './bot.interface';
-import { BotErrorMessages, BotSceneNames } from './bot.constants';
+import { BotErrorMessages, BotPhrases, BotSceneNames } from './bot.constants';
 import { TelegrafExceptionFilter } from './filters/telegraf-exception.filter';
 import { UseFilters } from '@nestjs/common';
 import { UserRepository } from 'src/user/repositories/user.repository';
@@ -38,6 +38,6 @@ export class BotUpdate {
 			return;
 		}
 
-		await ctx.reply('Вы успешно авторизованы');
+		await ctx.reply(BotPhrases.START);
 	}
 }
