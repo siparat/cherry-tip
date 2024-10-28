@@ -4,6 +4,11 @@ import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 
 export interface Session {
 	user?: UserModel;
+	filters: {
+		category: number | null;
+		preparation: number | null;
+		diet: number | null;
+	};
 }
 
 export interface Context extends Scenes.SceneContext {

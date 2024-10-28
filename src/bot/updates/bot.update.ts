@@ -1,10 +1,10 @@
 import { Ctx, Start, Update } from 'nestjs-telegraf';
-import { Context } from './bot.interface';
-import { BotErrorMessages, BotPhrases, BotSceneNames } from './bot.constants';
-import { TelegrafExceptionFilter } from './filters/telegraf-exception.filter';
+import { Context } from '../bot.interface';
+import { BotErrorMessages, BotNavigation, BotPhrases, BotSceneNames } from '../bot.constants';
+import { TelegrafExceptionFilter } from '../filters/telegraf-exception.filter';
 import { UseFilters } from '@nestjs/common';
 import { UserRepository } from 'src/user/repositories/user.repository';
-import { TelegrafError } from './filters/telegraf-error';
+import { TelegrafError } from '../filters/telegraf-error';
 import { IAccount } from 'src/user/user.interfaces';
 
 @UseFilters(TelegrafExceptionFilter)
@@ -38,6 +38,7 @@ export class BotUpdate {
 			return;
 		}
 
+		ctx.telegram.setMyCommands(BotNavigation);
 		await ctx.reply(BotPhrases.START);
 	}
 }

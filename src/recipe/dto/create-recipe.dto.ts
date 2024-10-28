@@ -7,6 +7,7 @@ import {
 	IsOptional,
 	IsString,
 	IsUrl,
+	Matches,
 	MaxLength,
 	Min,
 	MinLength
@@ -35,6 +36,7 @@ export class CreateRecipeDto {
 	title: string;
 
 	@ApiProperty({ minLength: 100, maxLength: 500 })
+	@Matches(/^[^\{\}\[\]]*$/, { message: CommonDtoErrors.IS_NOT_STRING.ru })
 	@MaxLength(500, { message: RecipeDtoErrors.MAX_LENGTH_DESCRIPTION.ru })
 	@IsString({ message: CommonDtoErrors.IS_NOT_STRING.ru })
 	@IsOptional()

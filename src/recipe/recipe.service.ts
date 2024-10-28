@@ -3,7 +3,7 @@ import { RecipeModel } from '@prisma/client';
 import { RecipeEntity } from './entities/recipe.entity';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { RecipeRepository } from './repositories/recipe.repository';
-import { IRecipeTags } from './recipe.interfaces';
+import { IRecipeTagModels, IRecipeTags } from './recipe.interfaces';
 import { RecipeCategoryRepository } from './repositories/recipe-category.repository';
 import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
 import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
@@ -65,6 +65,13 @@ export class RecipeService {
 		const buffer = await this.fileService.toAvif(file.buffer);
 		const url = await this.fileService.writeFile(name, buffer);
 		return url;
+	}
+
+	async getAllTags(): Promise<IRecipeTagModels> {
+		const categories = await this.recipeCategoryRepository.findAll();
+		const preparations = await this.recipePreparationRepository.findAll();
+		const diets = await this.recipeDietTypeRepository.findAll();
+		return { categories, preparations, diets };
 	}
 
 	private async recipeTagsIsExist(tags: IRecipeTags): Promise<boolean> {
