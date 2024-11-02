@@ -5,7 +5,8 @@ export const BotSceneNames = {
 	REGISTER: 'REGISTER',
 	CREATE_PROFILE: 'CREATE_PROFILE',
 	CREATE_UNITS: 'CREATE_UNITS',
-	CREATE_GOAL: 'CREATE_GOAL'
+	CREATE_GOAL: 'CREATE_GOAL',
+	CREATE_RECIPE: 'CREATE_RECIPE'
 };
 
 export const BotCommands = {
@@ -40,7 +41,15 @@ export const BotPhrases = {
 			'Чтобы настроить рекомендации и планы под твои цели, мне нужно немного больше информации о тебе 😊 Это поможет сделать программу максимально полезной и эффективной 💪✨'
 	},
 	RECIPES: {
-		START: '*🍲 Рецепты*\n\nЗдесь ты можешь найти рецепты для разнообразия своего рациона или создать свои собственные!'
+		START:
+			'*🍲 Рецепты*\n\nЗдесь ты можешь найти рецепты для разнообразия своего рациона или создать свои собственные!',
+		SEND_TITLE: '🥗 Название рецепта:',
+		SEND_DESCRIPTION: '💬 Описание (необязательно):',
+		SEND_IMAGE: '🖼️ Фото рецепта:',
+		SEND_PROTEIN: '🥚 Белка в 100г:',
+		SEND_FAT: '🧈 Жиров в 100г:',
+		SEND_CARBS: '🍫 Углеводов в 100г:',
+		CREATED: '🌟 Рецепт успешно создан'
 	}
 };
 
@@ -58,13 +67,15 @@ export const BotInlineTags = {
 };
 
 export const BotActions = {
-	RESTART: 'RESTART',
+	LEAVE: 'SCENE_LEAVE',
+	RESTART: 'SCENE_RESTART',
 	REGISTER: {
 		CONFIRM: 'REGISTER_CONFIRM'
 	},
 	RECIPES: {
-		ADD: 'RECIPES_ADD',
-		BACK: 'RECIPES_BACK'
+		CREATE: 'RECIPES_CREATE',
+		BACK: 'RECIPES_BACK',
+		SKIP_DESCRIPTION: 'SKIP_DESCRIPTION'
 	}
 };
 
@@ -76,5 +87,9 @@ export const BotErrorMessages = {
 	NOT_FOUND: {
 		ru: 'Рецепт не найден',
 		en: 'The recipe was not found'
+	},
+	RECIPE_ALREADY_EXIST: {
+		ru: 'Рецепт с таким именем уже существует',
+		en: 'A recipe with that name already exists'
 	}
 } satisfies ErrorsType;

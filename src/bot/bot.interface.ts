@@ -17,6 +17,7 @@ export interface Context extends Scenes.SceneContext {
 }
 
 export interface WizardContext<S = object> extends Scenes.WizardContext {
+	session: Scenes.WizardContext['session'] & Session;
 	wizard: Scenes.WizardContext['wizard'] & { state: S };
 	callbackQuery: CallbackQuery.DataQuery;
 }

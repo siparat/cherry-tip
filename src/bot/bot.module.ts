@@ -10,9 +10,11 @@ import { CreateUnitsScene } from './scenes/user/create-units.scene';
 import { RecipeUpdate } from './updates/recipe.update';
 import { RecipeModule } from 'src/recipe/recipe.module';
 import { BotService } from './bot.service';
+import { CreateRecipeScene } from './scenes/recipe/create-recipe.scene';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-	imports: [AuthModule, UserModule, RecipeModule],
+	imports: [AuthModule, UserModule, RecipeModule, HttpModule],
 	providers: [
 		BotService,
 		TelegrafAuthGuard,
@@ -21,7 +23,8 @@ import { BotService } from './bot.service';
 		RegisterScene,
 		CreateProfileScene,
 		CreateGoalScene,
-		CreateUnitsScene
+		CreateUnitsScene,
+		CreateRecipeScene
 	]
 })
 export class BotModule {}

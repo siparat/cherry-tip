@@ -1,5 +1,5 @@
 import { Action, Command, Ctx, InlineQuery, Message, On, Update } from 'nestjs-telegraf';
-import { BotActions, BotCommands, BotErrorMessages, BotInlineTags, BotPhrases } from '../bot.constants';
+import { BotActions, BotCommands, BotErrorMessages, BotInlineTags, BotPhrases, BotSceneNames } from '../bot.constants';
 import { Markup } from 'telegraf';
 import { Context } from '../bot.interface';
 import { getRegExpTag } from '../helpers/tags.helper';
@@ -30,10 +30,9 @@ export class RecipeUpdate {
 			...Markup.inlineKeyboard([
 				[
 					Markup.button.switchToCurrentChat('🔎 Поиск', BotInlineTags.SEARCH + ' '),
-					Markup.button.switchToCurrentChat('👤 Мои', BotInlineTags.MINE + ' '),
-					Markup.button.callback('🍲 Создать рецепт', BotActions.RECIPES.ADD)
+					Markup.button.switchToCurrentChat('👤 Мои', BotInlineTags.MINE + ' ')
 				],
-				[Markup.button.callback(`${this.filtersIsActive(ctx.session) ? '🟢' : '🎛️'} Фильтры`, BotActions.RECIPES.ADD)]
+				[Markup.button.callback('🍲 Создать рецепт', BotActions.RECIPES.CREATE)]
 			])
 		});
 	}
@@ -88,7 +87,8 @@ export class RecipeUpdate {
 		}
 	}
 
-	private filtersIsActive(session: Context['session']): boolean {
-		return Object.values(session.filters).some((id) => !!id);
+	@Action(BotActions.RECIPES.CREATE)
+	async startCreatingRecipe(@Ctx() ctx: Context): Promise<void> {
+		await ctx.scene.enter(BotSceneNames.CREATE_RECIPE);
 	}
 }

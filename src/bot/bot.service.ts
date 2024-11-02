@@ -34,8 +34,7 @@ export class BotService {
 			🧈 Жиров – *${recipe.fat}г*
 			🍫 Углеводов – *${recipe.carbs}г*
 			${tags.length ? `\n🏷️* ${tags.join(' • ')}*` : ''}
-			🕒 *${recipe.cookingTime} мин.*
-
+			${recipe.cookingTime ? `🕒 *${recipe.cookingTime} мин.*` : ''}
 		`;
 
 		const mobileAppUrl = this.config.get('MOBILE_APP_URL');

@@ -60,7 +60,7 @@ export class RecipeService {
 		return this.recipeRepository.editRecipe(id, entity);
 	}
 
-	async saveImage(file: Express.Multer.File): Promise<string> {
+	async saveImage(file: Pick<Express.Multer.File, 'buffer'>): Promise<string> {
 		const name = randomUUID() + '.webp';
 		const buffer = await this.fileService.toAvif(file.buffer);
 		const url = await this.fileService.writeFile(name, buffer);
