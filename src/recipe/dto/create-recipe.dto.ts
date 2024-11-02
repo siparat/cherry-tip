@@ -8,6 +8,7 @@ import {
 	IsString,
 	IsUrl,
 	Matches,
+	Max,
 	MaxLength,
 	Min,
 	MinLength
@@ -65,16 +66,19 @@ export class CreateRecipeDto {
 
 	@ApiProperty({ minimum: 0, description: 'Белка в 100г' })
 	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_NUMBER.ru })
+	@Max(2147483647, { message: CommonDtoErrors.MAX_INT4.ru })
 	@Min(0, { message: CommonDtoErrors.MIN_ZERO.ru })
 	protein: number;
 
 	@ApiProperty({ minimum: 0, description: 'Жиров в 100г' })
 	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_NUMBER.ru })
+	@Max(2147483647, { message: CommonDtoErrors.MAX_INT4.ru })
 	@Min(0, { message: CommonDtoErrors.MIN_ZERO.ru })
 	fat: number;
 
 	@ApiProperty({ minimum: 0, description: 'Углеводов в 100г' })
 	@IsNumber({}, { message: CommonDtoErrors.IS_NOT_NUMBER.ru })
+	@Max(2147483647, { message: CommonDtoErrors.MAX_INT4.ru })
 	@Min(0, { message: CommonDtoErrors.MIN_ZERO.ru })
 	carbs: number;
 
