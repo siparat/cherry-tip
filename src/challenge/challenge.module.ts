@@ -9,6 +9,7 @@ import { UserModule } from 'src/user/user.module';
 @Module({
 	imports: [DatabaseModule, AuthModule, UserModule],
 	controllers: [ChallengeController],
-	providers: [ChallengeService, ChallengeRepository]
+	providers: [ChallengeService, ChallengeRepository],
+	exports: [ChallengeService, ChallengeRepository]
 })
 export class ChallengeModule {}
