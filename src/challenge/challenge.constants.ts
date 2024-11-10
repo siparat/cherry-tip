@@ -10,8 +10,8 @@ export const ChallengeErrorMessages = {
 		en: 'This challenge is already started'
 	},
 	ALREADY_CANCELED: {
-		ru: 'Данный челлендж уже отменен',
-		en: 'This challenge has already been canceled'
+		ru: 'Данный челлендж уже остановлен',
+		en: 'This challenge has already been stopped'
 	},
 	NOT_FOUND: {
 		ru: 'Челлендж с таким id не найден',
