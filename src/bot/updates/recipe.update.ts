@@ -1,4 +1,4 @@
-import { Action, Command, Ctx, InlineQuery, Message, On, Update } from 'nestjs-telegraf';
+import { Action, Command, Ctx, InlineQuery, Message, Next, On, Update } from 'nestjs-telegraf';
 import { BotActions, BotCommands, BotErrorMessages, BotInlineTags, BotPhrases, BotSceneNames } from '../bot.constants';
 import { Markup } from 'telegraf';
 import { Context } from '../bot.interface';
@@ -13,6 +13,7 @@ import { TelegrafUser } from '../decorators/telegraf-user.decorator';
 import { UserModel } from '@prisma/client';
 import { Message as IMessage } from 'telegraf/typings/core/types/typegram';
 import { TelegrafError } from '../filters/telegraf-error';
+import { NextFunction } from 'express';
 
 @UseFilters(TelegrafExceptionFilter)
 @Update()
@@ -38,11 +39,15 @@ export class RecipeUpdate {
 	}
 
 	@On('text')
-	async getRecipeCard(@Ctx() ctx: Context, @Message() msg: IMessage.TextMessage): Promise<void> {
-		if (!msg.via_bot || msg.via_bot.id !== ctx.botInfo.id) {
-			return;
+	async getRecipeCard(
+		@Ctx() ctx: Context,
+		@Message() msg: IMessage.TextMessage,
+		@Next() next: NextFunction
+	): Promise<void> {
+		if (!msg.via_bot || msg.via_bot.id !== ctx.botInfo.id || !msg.text.startsWith(BotInlineTags.SEARCH)) {
+			return next();
 		}
-		const id = Number(msg.text);
+		const id = Number(msg.text.split(' ')[1]);
 		const recipe = await this.recipeRepository.findById(id);
 		if (!recipe) {
 			throw new TelegrafError(BotErrorMessages.NOT_FOUND.ru);

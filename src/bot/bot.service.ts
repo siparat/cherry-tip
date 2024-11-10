@@ -1,15 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RecipeModel } from '@prisma/client';
+import { ChallengeModel, RecipeModel } from '@prisma/client';
 import * as dedent from 'dedent-js';
+import { declinate } from 'src/helpers/string.helpers';
 import { IRecipeTags } from 'src/recipe/recipe.interfaces';
 import { RecipeService } from 'src/recipe/recipe.service';
-import { InlineQueryResultArticle } from 'telegraf/typings/core/types/typegram';
+import { CallbackQuery, InlineQueryResultArticle } from 'telegraf/typings/core/types/typegram';
+import { BotInlineTags } from './bot.constants';
+import { ChallengeService } from 'src/challenge/challenge.service';
+import { IChallenge } from 'src/challenge/challenge.interfaces';
+import { add, intervalToDuration } from 'date-fns';
 
 @Injectable()
 export class BotService {
 	constructor(
 		private recipeService: RecipeService,
+		private challengeService: ChallengeService,
 		private config: ConfigService
 	) {}
 
@@ -18,9 +24,24 @@ export class BotService {
 			type: 'article',
 			id: recipe.id.toString(),
 			title: recipe.title,
-			description: `🔥 ${recipe.calories} Ккал\n${recipe.protein}г • ${recipe.fat}г • ${recipe.carbs}г (БЖУ)`,
+			description: dedent`
+				🔥 ${recipe.calories} Ккал
+				${recipe.protein}г • ${recipe.fat}г • ${recipe.carbs}г (БЖУ)`,
 			thumbnail_url: recipe.image,
-			input_message_content: { message_text: recipe.id.toString() }
+			input_message_content: { message_text: BotInlineTags.SEARCH + ' ' + recipe.id.toString() }
+		};
+	}
+
+	getInlineResultChallenge(challenge: ChallengeModel): InlineQueryResultArticle {
+		return {
+			type: 'article',
+			id: challenge.id.toString(),
+			title: challenge.title,
+			description: dedent`
+				⚡️ ${challenge.difficulty}
+				🕖 ${challenge.durationDays} ${declinate(challenge.durationDays, ['день', 'дня', 'дней'])}
+			`,
+			input_message_content: { message_text: BotInlineTags.CHALLENGES + ' ' + challenge.id.toString() }
 		};
 	}
 
@@ -56,6 +77,31 @@ export class BotService {
 		} catch {
 			return info;
 		}
+	}
+
+	async constructChallengeCard(ch: IChallenge): Promise<string> {
+		const remainedTime =
+			ch.userChallenge &&
+			intervalToDuration({
+				start: new Date(),
+				end: add(ch.userChallenge.startDate, { days: ch.durationDays })
+			});
+
+		const info: string = dedent`
+			*🎯 ${ch.title}${ch.userChallenge && ch.userChallenge.status !== 'Canceled' ? ` • ${ch.userChallenge.status == 'Started' ? 'Активный' : 'Завершённый'}` : ''}*
+			${ch.userChallenge?.status == 'Started' ? `\n⏳ Осталось: *${remainedTime?.days || 0}д. ${remainedTime?.hours || 0}ч. ${remainedTime?.minutes || 0}мин.*` : ''}
+			🕖 Длительность: *${ch.durationDays} ${declinate(ch.durationDays, ['день', 'дня', 'дней'])}*
+			⚡️ Сложность: *${ch.difficulty}*
+
+			*Советы:*
+			${ch.tips.join('\n\n')}
+		`;
+
+		return info;
+	}
+
+	getIdFromCallback(callback: CallbackQuery.DataQuery): number {
+		return Number(new URLSearchParams(callback.data.split('?')[1]).get('id'));
 	}
 
 	private async getRecipeTagsText(tags: IRecipeTags): Promise<string[]> {
