@@ -17,12 +17,20 @@ export class UserRepository {
 		return this.database.userModel.findUnique({ where: { email } });
 	}
 
-	findUniqueUser(email?: string, login?: string): Promise<UserModel | null> {
+	findUniqueUser(email?: string, login?: string, tgId?: number): Promise<UserModel | null> {
 		return this.database.userModel.findFirst({
 			where: {
-				OR: [{ email: { mode: 'insensitive', equals: email } }, { login: { mode: 'insensitive', equals: login } }]
+				OR: [
+					{ email: { mode: 'insensitive', equals: email } },
+					{ login: { mode: 'insensitive', equals: login } },
+					{ tgId }
+				]
 			}
 		});
+	}
+
+	findByTgId(tgId: number): Promise<UserModel | null> {
+		return this.database.userModel.findUnique({ where: { tgId } });
 	}
 
 	async findAccountById(id: string): Promise<IAccount | null> {

@@ -1,3 +1,5 @@
+import { ErrorsType } from './common.interfaces';
+
 export const CommonDtoErrors = {
 	LATIN_ONLY: {
 		ru: 'Разрешено использовать только латинские буквы и цифры',
@@ -51,11 +53,15 @@ export const CommonDtoErrors = {
 		ru: 'Минимальное значение – 0',
 		en: 'The minimum value is 0'
 	},
+	MAX_INT4: {
+		ru: 'Максимальное значение – 2147483647',
+		en: 'The maximum value is 2147483647'
+	},
 	UNKNOWN_VALUE: {
 		ru: 'Передано неизвестное значение',
 		en: 'An unknown value was passed'
 	}
-};
+} satisfies ErrorsType;
 
 export const CommonErrorMessages = {
 	INCORRECT_PAGINATION_PARAMS: {
@@ -70,4 +76,4 @@ export const CommonErrorMessages = {
 		ru: 'Не передан файл',
 		en: 'The file was not transferred'
 	}
-};
+} satisfies ErrorsType;

@@ -7,16 +7,16 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SetRecipesDto {
 	@ApiProperty({ description: 'Дата в формате ISO8601 ' })
-	@IsDate({ message: CommonDtoErrors.IS_NOT_DATE.en })
+	@IsDate({ message: CommonDtoErrors.IS_NOT_DATE.ru })
 	@Type(() => Date)
 	date: Date;
 
 	@ApiProperty({ enum: CategoryEnum })
-	@IsEnum(CategoryEnum, { message: CalendarDtoErrors.INVALID_CATEGORY.en })
+	@IsEnum(CategoryEnum, { message: CalendarDtoErrors.INVALID_CATEGORY.ru })
 	category: CategoryEnum;
 
 	@ApiProperty({ type: String, isArray: true, description: 'Массив id рецептов' })
-	@IsInt({ each: true, message: CommonDtoErrors.IS_NOT_INT.en })
-	@IsArray({ message: CommonDtoErrors.IS_NOT_ARRAY.en })
+	@IsInt({ each: true, message: CommonDtoErrors.IS_NOT_INT.ru })
+	@IsArray({ message: CommonDtoErrors.IS_NOT_ARRAY.ru })
 	recipes: number[];
 }

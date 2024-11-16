@@ -34,14 +34,23 @@ export class ChallengeRepository {
 		return this.database.challengeModel.findMany(options);
 	}
 
-	findManyByStatus(
+	async findManyByStatus(
 		status: StatusEnum | undefined,
 		userId: string,
 		options: IPaginationParams
-	): Promise<ChallengeModel[]> {
-		return this.database.challengeModel.findMany({
+	): Promise<IChallenge[]> {
+		const challenges = await this.database.challengeModel.findMany({
 			where: { userChallenges: { some: { userId, status } } },
+			include: { userChallenges: { where: { userId } } },
 			...options
+		});
+
+		return challenges.map((c) => {
+			const userChallenge = c.userChallenges[0];
+			return {
+				...excludeProperty(c, 'userChallenges'),
+				userChallenge: userChallenge && excludeProperty(userChallenge, 'challengeId')
+			};
 		});
 	}
 

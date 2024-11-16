@@ -15,6 +15,7 @@ datasource db {
 
 model UserModel {
     id           String               @id @default(cuid())
+    tgId         Int?                 @unique
     createdAt    DateTime             @default(now())
     updatedAt    DateTime             @updatedAt
     email        String               @unique

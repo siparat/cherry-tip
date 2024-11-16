@@ -19,6 +19,7 @@ import { UserModule } from 'src/user/user.module';
 		RecipeCategoryRepository,
 		RecipeDietTypeRepository,
 		RecipePreparationRepository
-	]
+	],
+	exports: [RecipeService, RecipeRepository]
 })
 export class RecipeModule {}

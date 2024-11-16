@@ -13,7 +13,9 @@ export const getNutrionsFromDayRecipes = () =>
 				recipes: {
 					select: {
 						id: true,
-						recipe: { select: { id: true, protein: true, fat: true, carbs: true, calories: true } }
+						recipe: {
+							select: { id: true, title: true, image: true, protein: true, fat: true, carbs: true, calories: true }
+						}
 					}
 				}
 			}
@@ -58,9 +60,12 @@ export class DayRepository {
 		});
 	}
 
-	getMealByDate(date: Date, category: CategoryEnum, userId: string): Promise<DayMealModel | null> {
+	getMealByDate(date: Date, category: CategoryEnum, userId: string): Promise<IDay['meals'][number] | null> {
 		date = resetDateTime(date);
-		return this.database.dayMealModel.findFirst({ where: { category, day: { date, userId } } });
+		return this.database.dayMealModel.findFirst({
+			where: { category, day: { date, userId } },
+			include: getNutrionsFromDayRecipes().meals.include
+		});
 	}
 
 	async createDayRecipe(dayMealId: number, recipeId: number): Promise<number | null> {

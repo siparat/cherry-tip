@@ -8,6 +8,9 @@ import { CalendarModule } from './calendar/calendar.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { path } from 'app-root-path';
+import { BotModule } from './bot/bot.module';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { getTelegrafConfig } from './configs/telegraf.config';
 
 @Module({
 	imports: [
@@ -16,6 +19,7 @@ import { path } from 'app-root-path';
 		RecipeModule,
 		ChallengeModule,
 		CalendarModule,
+		BotModule,
 		ConfigModule.forRoot({ isGlobal: true }),
 		ServeStaticModule.forRoot({
 			rootPath: `${join(path, 'uploads')}`,

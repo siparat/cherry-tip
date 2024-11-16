@@ -1,6 +1,6 @@
 import { ErrorsType } from 'src/common/common.interfaces';
 
-export const ChallengeErrorMessages: ErrorsType = {
+export const ChallengeErrorMessages = {
 	ALREADY_EXIST_WITH_THIS_NAME: {
 		ru: 'Челлендж с таким названием уже есть, укажите другое название',
 		en: 'There is already a challenge with this name, please specify another name'
@@ -10,8 +10,8 @@ export const ChallengeErrorMessages: ErrorsType = {
 		en: 'This challenge is already started'
 	},
 	ALREADY_CANCELED: {
-		ru: 'Данный челлендж уже отменен',
-		en: 'This challenge has already been canceled'
+		ru: 'Данный челлендж уже остановлен',
+		en: 'This challenge has already been stopped'
 	},
 	NOT_FOUND: {
 		ru: 'Челлендж с таким id не найден',
@@ -21,9 +21,9 @@ export const ChallengeErrorMessages: ErrorsType = {
 		ru: 'В entity не указан id',
 		en: 'The ID is not specified in the entity'
 	}
-};
+} satisfies ErrorsType;
 
-export const ChallengeDtoErrors: ErrorsType = {
+export const ChallengeDtoErrors = {
 	MAX_LENGTH_TITLE: {
 		ru: 'Максимальная длина заголовка – 24',
 		en: 'The maximum length of the header is 24'
@@ -40,4 +40,4 @@ export const ChallengeDtoErrors: ErrorsType = {
 		ru: 'Укажите верную сложность челленджа',
 		en: 'Specify the correct difficulty of the challenge'
 	}
-};
+} satisfies ErrorsType;

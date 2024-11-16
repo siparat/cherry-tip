@@ -1,6 +1,6 @@
 import { ErrorsType } from 'src/common/common.interfaces';
 
-export const CalendarErrorMessages: ErrorsType = {
+export const CalendarErrorMessages = {
 	RECIPE_NOT_FOUND: {
 		ru: 'Рецепт с таким id не найден',
 		en: 'The recipe with this ID was not found'
@@ -17,11 +17,11 @@ export const CalendarErrorMessages: ErrorsType = {
 		ru: 'Укажите существующий день',
 		en: 'Specify an existing day'
 	}
-};
+} satisfies ErrorsType;
 
-export const CalendarDtoErrors: ErrorsType = {
+export const CalendarDtoErrors = {
 	INVALID_CATEGORY: {
 		ru: 'Укажите категорию блюда',
 		en: 'Specify the category of the dish'
 	}
-};
+} satisfies ErrorsType;

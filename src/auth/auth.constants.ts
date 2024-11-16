@@ -1,6 +1,6 @@
 import { ErrorsType } from 'src/common/common.interfaces';
 
-export const AuthErrorMessages: ErrorsType = {
+export const AuthErrorMessages = {
 	NOT_FOUND: {
 		ru: 'Такой пользователь не найден',
 		en: 'The user was not found'
@@ -17,9 +17,9 @@ export const AuthErrorMessages: ErrorsType = {
 		ru: 'Логин или пароль неверны',
 		en: 'The login or password is incorrect'
 	}
-};
+} satisfies ErrorsType;
 
-export const AuthDtoErrors: ErrorsType = {
+export const AuthDtoErrors = {
 	INVALID_SYMBOLS: {
 		ru: 'Пароль должен содержать только цифры, буквы и специальные символы',
 		en: 'The password must contain only numbers, letters and special characters'
@@ -40,4 +40,4 @@ export const AuthDtoErrors: ErrorsType = {
 		ru: 'Минимальная длина пароля – 4',
 		en: 'The minimum password length is 4'
 	}
-};
+} satisfies ErrorsType;

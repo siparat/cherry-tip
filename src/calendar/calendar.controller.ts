@@ -22,6 +22,7 @@ import { DayRepository } from './repositories/day.repository';
 import { CalendarErrorMessages } from './calendar.constants';
 import { ParseDatePipe } from 'src/pipes/parse-date.pipe';
 import { SetRecipesDto } from './dto/set-recipes.dto';
+import { IDay } from './calendar.interfaces';
 
 @Controller('calendar')
 export class CalendarController {
@@ -32,7 +33,7 @@ export class CalendarController {
 
 	@UseGuards(JwtAuthGuard)
 	@Get('day/:id')
-	async getById(@Param('id', ParseIntPipe) id: number, @User() user: UserModel): Promise<DayModel> {
+	async getById(@Param('id', ParseIntPipe) id: number, @User() user: UserModel): Promise<IDay> {
 		const day = await this.dayRepository.getById(id);
 		if (!day) {
 			throw new NotFoundException(CalendarErrorMessages.DAY_NOT_FOUND);
