@@ -72,7 +72,7 @@ export class ChallengeUpdate {
 		const id = Number(msg.text.split(' ')[1]);
 		const challenge = await this.challengeService.getStatus(id, user.id);
 
-		const card = await this.botService.constructChallengeCard(challenge);
+		const card = this.botService.constructChallengeCard(challenge);
 		const keyboard = this.constructChallengeKeyboard(id, challenge.userChallenge?.status);
 		await ctx.reply(card, { parse_mode: 'Markdown', ...keyboard });
 	}
@@ -84,7 +84,7 @@ export class ChallengeUpdate {
 		const result = await this.challengeService.startChallenge(id, user.id);
 
 		const updatedChallenge = await this.challengeService.getStatus(id, user.id);
-		const card = await this.botService.constructChallengeCard(updatedChallenge);
+		const card = this.botService.constructChallengeCard(updatedChallenge);
 		const keyboard = this.constructChallengeKeyboard(id, result.status);
 		await ctx.editMessageText(card, { parse_mode: 'Markdown', ...keyboard });
 	}
@@ -96,7 +96,7 @@ export class ChallengeUpdate {
 		const result = await this.challengeService.cancelChallenge(id, user.id);
 
 		const updatedChallenge = await this.challengeService.getStatus(id, user.id);
-		const card = await this.botService.constructChallengeCard(updatedChallenge);
+		const card = this.botService.constructChallengeCard(updatedChallenge);
 		const keyboard = this.constructChallengeKeyboard(id, result.status);
 		await ctx.editMessageText(card, { parse_mode: 'Markdown', ...keyboard });
 	}

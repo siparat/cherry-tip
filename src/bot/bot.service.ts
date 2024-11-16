@@ -1,34 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChallengeModel, RecipeModel } from '@prisma/client';
+import { CategoryEnum, ChallengeModel, GoalTypeEnum, RecipeModel } from '@prisma/client';
 import * as dedent from 'dedent-js';
 import { declinate } from 'src/helpers/string.helpers';
-import { IRecipeTags } from 'src/recipe/recipe.interfaces';
+import { IRecipeShortInfo, IRecipeTags } from 'src/recipe/recipe.interfaces';
 import { RecipeService } from 'src/recipe/recipe.service';
 import { CallbackQuery, InlineQueryResultArticle } from 'telegraf/typings/core/types/typegram';
 import { BotInlineTags } from './bot.constants';
-import { ChallengeService } from 'src/challenge/challenge.service';
 import { IChallenge } from 'src/challenge/challenge.interfaces';
-import { add, intervalToDuration } from 'date-fns';
+import { add, intervalToDuration, format } from 'date-fns';
+import { IDay } from 'src/calendar/calendar.interfaces';
+import { ru } from 'date-fns/locale';
+import { Context } from './bot.interface';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class BotService {
 	constructor(
 		private recipeService: RecipeService,
-		private challengeService: ChallengeService,
 		private config: ConfigService
 	) {}
 
-	getInlineResultRecipe(recipe: RecipeModel): InlineQueryResultArticle {
+	getInlineResultRecipe(recipe: IRecipeShortInfo, tag: string): InlineQueryResultArticle {
 		return {
 			type: 'article',
-			id: recipe.id.toString(),
+			id: recipe.id.toString() + randomInt(64),
 			title: recipe.title,
 			description: dedent`
 				🔥 ${recipe.calories} Ккал
 				${recipe.protein}г • ${recipe.fat}г • ${recipe.carbs}г (БЖУ)`,
 			thumbnail_url: recipe.image,
-			input_message_content: { message_text: BotInlineTags.SEARCH + ' ' + recipe.id.toString() }
+			input_message_content: { message_text: tag + ' ' + recipe.id.toString() }
 		};
 	}
 
@@ -79,7 +81,7 @@ export class BotService {
 		}
 	}
 
-	async constructChallengeCard(ch: IChallenge): Promise<string> {
+	constructChallengeCard(ch: IChallenge): string {
 		const remainedTime =
 			ch.userChallenge &&
 			intervalToDuration({
@@ -98,6 +100,122 @@ export class BotService {
 		`;
 
 		return info;
+	}
+
+	constructDayCard(day: IDay): string {
+		const calories: Record<CategoryEnum, number> = { Breakfast: 0, Lunch: 0, Dinner: 0, Snack: 0 };
+		let protein: number = 0;
+		let fat: number = 0;
+		let carbs: number = 0;
+
+		day.meals.forEach((m) => {
+			m.recipes.forEach(({ recipe }) => {
+				calories[m.category] += recipe.calories;
+				protein += recipe.protein.toNumber();
+				fat += recipe.fat.toNumber();
+				carbs += recipe.carbs.toNumber();
+			});
+		});
+
+		let goal: string;
+
+		switch (day.goal) {
+			case GoalTypeEnum.Gain:
+				goal = 'Набор массы';
+				break;
+			case GoalTypeEnum.Lose:
+				goal = 'Похудение';
+				break;
+			case GoalTypeEnum.Stay:
+				goal = 'Поддержание веса';
+				break;
+		}
+
+		const eatenCalories = calories.Breakfast + calories.Dinner + calories.Lunch + calories.Snack;
+
+		const info: string = dedent`
+			*📅 ${format(day.date, "d MMMM yyyy' г.'", { locale: ru })} • 🔥 ${day.needCalories} Ккал*
+
+			🍴 *Съедено:* ${eatenCalories} Ккал
+			🍲 *Осталось:* ${day.needCalories - eatenCalories} Ккал
+			🎯 *Цель в этот день:* ${goal}
+
+			🥚 *Белки:* ${protein} / ${day.protein} грамм
+			🧈 *Жиры:* ${fat} / ${day.fat} грамм
+			🍫 *Углеводы:* ${carbs} / ${day.carbs} грамм
+
+			*Приемы пищи:*
+			🥐 *Завтрак:* ${calories.Breakfast} / ${day.breakfast}
+			🍛 *Обед:* ${calories.Lunch} / ${day.lunch}
+			🍽️ *Ужин:* ${calories.Dinner} / ${day.dinner}
+			🍏 *Перекус:* ${calories.Snack} / ${day.snack}
+		`;
+
+		return info;
+	}
+
+	constructMealCard(meal: IDay['meals'][number], day: IDay): string {
+		let calories: number = 0;
+		let protein: number = 0;
+		let fat: number = 0;
+		let carbs: number = 0;
+
+		let mealName: string;
+		let needCalories: number = 0;
+
+		meal.recipes.forEach(({ recipe }) => {
+			calories += recipe.calories;
+			protein += recipe.protein.toNumber();
+			fat += recipe.fat.toNumber();
+			carbs += recipe.carbs.toNumber();
+		});
+
+		switch (meal.category) {
+			case CategoryEnum.Breakfast:
+				mealName = '🥐 Завтрак';
+				needCalories = day.breakfast;
+				break;
+			case CategoryEnum.Lunch:
+				mealName = '🍛 Обед';
+				needCalories = day.lunch;
+				break;
+			case CategoryEnum.Dinner:
+				mealName = '🍽️ Ужин';
+				needCalories = day.dinner;
+				break;
+			case CategoryEnum.Snack:
+				mealName = '🍏 Перекус';
+				needCalories = day.snack;
+				break;
+		}
+
+		const info = dedent`
+			*${mealName} • ${format(day.date, 'yyyy-MM-dd')}*
+
+			*🔥 ${calories} / ${needCalories} Ккал*
+			*🥚 ${protein}г 🧈 ${fat}г 🍫 ${carbs}г*
+
+			*Список блюд:*
+			${meal.recipes.length == 0 ? 'Пусто' : ''}${meal.recipes
+				.slice(0, 20)
+				.map(({ recipe }) => `*${recipe.title}* 🔥 ${recipe.calories} Ккал`)
+				.join('\n')}
+			${meal.recipes.length > 20 ? '*...*' : ''}
+		`;
+
+		return info;
+	}
+
+	async sendRecipesInQuery(ctx: Context, recipes: IRecipeShortInfo[], tag: string): Promise<void> {
+		const result = recipes.map((r) => this.getInlineResultRecipe(r, tag));
+		try {
+			await ctx.answerInlineQuery(result, { cache_time: 0 });
+		} catch (error) {
+			await ctx.answerInlineQuery(
+				result.map(({ thumbnail_url, ...r }) => r),
+				{ cache_time: 0 }
+			);
+		}
 	}
 
 	getIdFromCallback(callback: CallbackQuery.DataQuery): number {

@@ -8,6 +8,7 @@ import { UserModule } from 'src/user/user.module';
 @Module({
 	imports: [DatabaseModule, UserModule],
 	providers: [CalendarService, DayRepository],
-	controllers: [CalendarController]
+	controllers: [CalendarController],
+	exports: [CalendarService, DayRepository]
 })
 export class CalendarModule {}

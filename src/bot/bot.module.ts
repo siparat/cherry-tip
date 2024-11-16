@@ -14,13 +14,16 @@ import { CreateRecipeScene } from './scenes/recipe/create-recipe.scene';
 import { HttpModule } from '@nestjs/axios';
 import { ChallengeUpdate } from './updates/challenge.update';
 import { ChallengeModule } from 'src/challenge/challenge.module';
+import { DiaryUpdate } from './updates/diary.update';
+import { CalendarModule } from 'src/calendar/calendar.module';
 
 @Module({
-	imports: [AuthModule, UserModule, RecipeModule, ChallengeModule, HttpModule],
+	imports: [AuthModule, UserModule, RecipeModule, ChallengeModule, CalendarModule, HttpModule],
 	providers: [
+		BotUpdate,
 		ChallengeUpdate,
 		RecipeUpdate,
-		BotUpdate,
+		DiaryUpdate,
 		BotService,
 		TelegrafAuthGuard,
 		RegisterScene,

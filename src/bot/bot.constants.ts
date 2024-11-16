@@ -12,13 +12,13 @@ export const BotSceneNames = {
 
 export const BotCommands = {
 	RECIPES: 'recipes',
-	ADD: 'add',
+	DIARY: 'diary',
 	CHALLENGES: 'challenges'
 };
 
 export const BotNavigation: BotCommand[] = [
 	{ command: BotCommands.RECIPES, description: '🔍 Поиск и добавление рецептов' },
-	{ command: BotCommands.ADD, description: '🍽️ Добавить питание' },
+	{ command: BotCommands.DIARY, description: '🍽️ Дневник питания' },
 	{ command: BotCommands.CHALLENGES, description: '🎯 Челленджи' }
 ];
 
@@ -85,6 +85,15 @@ export const BotPhrases = {
 
 			Готов испытать себя и улучшить свои привычки? Выбери челлендж и начни менять свой рацион шаг за шагом!
 		`
+	},
+	DIARY: {
+		START: dedent`
+			*🍽️ Дневник питания*
+
+			Веди свой дневник питания и наблюдай за рационом каждый день 🗓️ Добавляй блюда и продукты, чтобы отслеживать прогресс и делать более полезный выбор для себя 🍏
+
+			🎯 Выбери день, для заполнения дневника в формате 2000-12-31:
+		`
 	}
 };
 
@@ -101,7 +110,9 @@ export const BotInlineTags = {
 	MINE: '#mine',
 	CHALLENGES: '#challenges',
 	CHALLENGES_ACTIVED: '#challenges_actived',
-	CHALLENGES_FINISHED: '#challenges_finished'
+	CHALLENGES_FINISHED: '#challenges_finished',
+	DIARY_ADD: '#add',
+	DIARY_REMOVE: '#remove'
 };
 
 export const BotActions = {
@@ -113,16 +124,34 @@ export const BotActions = {
 	RECIPES: {
 		CREATE: 'RECIPES_CREATE',
 		BACK: 'RECIPES_BACK',
-		SKIP_DESCRIPTION: 'SKIP_DESCRIPTION'
+		SKIP_DESCRIPTION: 'RECIPES_SKIP_DESCRIPTION'
 	},
 	CHALLENGES: {
 		BACK: 'CHALLENGES_BACK',
 		START: 'CHALLENGES_START',
 		STOP: 'CHALLENGES_STOP'
+	},
+	DIARY: {
+		BACK: 'DIARY_BACK',
+		TODAY: 'DIARY_TODAY',
+		YESTERDAY: 'DIARY_YESTERDAY',
+		BREAKFAST: 'DIARY_BREAKFAST',
+		LUNCH: 'DIARY_LUNCH',
+		DINNARY: 'DIARY_DINNARY',
+		SNACK: 'DIARY_SNACK',
+		GET_MEAL_INFO: 'DIARY_GET_MEAL_INFO'
 	}
 };
 
 export const BotErrorMessages = {
+	BAD_CATEGORY: {
+		ru: 'Неверно указана категория',
+		en: 'The category is selected incorrectly'
+	},
+	BAD_DATE: {
+		ru: 'Неправильный формат даты, используйте 2000-12-31',
+		en: 'Incorrect date format, use 2000-12-31'
+	},
 	BAD_FROM: {
 		ru: 'Отправитель не найден',
 		en: 'Sender not found'

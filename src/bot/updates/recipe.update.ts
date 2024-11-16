@@ -65,31 +65,14 @@ export class RecipeUpdate {
 	@InlineQuery(getRegExpTag(BotInlineTags.SEARCH))
 	async searchRecipes(@Ctx() ctx: Context, @InlineMessage() q: string): Promise<void> {
 		const recipes = await this.recipeRepository.search(q, { take: 15 });
-		const result = recipes.map((r) => this.botService.getInlineResultRecipe(r));
-		try {
-			await ctx.answerInlineQuery(result, { cache_time: 0 });
-		} catch (error) {
-			await ctx.answerInlineQuery(
-				result.map(({ thumbnail_url, ...r }) => r),
-				{ cache_time: 0 }
-			);
-		}
+		await this.botService.sendRecipesInQuery(ctx, recipes, BotInlineTags.SEARCH);
 	}
 
 	@UseGuards(TelegrafAuthGuard)
 	@InlineQuery(getRegExpTag(BotInlineTags.MINE))
 	async getMineRecipes(@Ctx() ctx: Context, @TelegrafUser() user: UserModel): Promise<void> {
 		const recipes = await this.recipeRepository.findMineRecipes(user.id, { take: 15 });
-		const result = recipes.map((r) => this.botService.getInlineResultRecipe(r));
-
-		try {
-			await ctx.answerInlineQuery(result, { cache_time: 0 });
-		} catch (error) {
-			await ctx.answerInlineQuery(
-				result.map(({ thumbnail_url, ...r }) => r),
-				{ cache_time: 0 }
-			);
-		}
+		await this.botService.sendRecipesInQuery(ctx, recipes, BotInlineTags.SEARCH);
 	}
 
 	@Action(BotActions.RECIPES.CREATE)
