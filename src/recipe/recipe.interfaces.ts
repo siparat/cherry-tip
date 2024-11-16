@@ -33,4 +33,4 @@ export interface IRecipeTagModels {
 
 export type Nutrition = Pick<IRecipeEntity, 'protein' | 'carbs' | 'fat'>;
 
-export type IRecipeOnlyNutrion = Pick<RecipeModel, 'id' | 'calories' | 'protein' | 'carbs' | 'fat'>;
+export type IRecipeShortInfo = Pick<RecipeModel, 'id' | 'title' | 'image' | 'calories' | 'protein' | 'carbs' | 'fat'>;
