@@ -21,9 +21,20 @@ import { getTelegrafConfig } from './configs/telegraf.config';
 		CalendarModule,
 		BotModule,
 		ConfigModule.forRoot({ isGlobal: true }),
-		ServeStaticModule.forRoot({ rootPath: `${join(path, 'uploads')}`, serveRoot: '/uploads' }),
-		ServeStaticModule.forRoot({ rootPath: `${join(path, 'assets')}`, serveRoot: '/assets' }),
-		TelegrafModule.forRootAsync(getTelegrafConfig())
+		ServeStaticModule.forRoot({
+			rootPath: `${join(path, 'uploads')}`,
+			serveRoot: '/uploads',
+			serveStaticOptions: {
+				index: false
+			}
+		}),
+		ServeStaticModule.forRoot({
+			rootPath: `${join(path, 'assets')}`,
+			serveRoot: '/assets',
+			serveStaticOptions: {
+				index: false
+			}
+		})
 	]
 })
 export class AppModule {}
