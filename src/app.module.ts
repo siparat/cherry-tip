@@ -20,6 +20,7 @@ import { getTelegrafConfig } from './configs/telegraf.config';
 		ChallengeModule,
 		CalendarModule,
 		BotModule,
+		TelegrafModule.forRootAsync(getTelegrafConfig()),
 		ConfigModule.forRoot({ isGlobal: true }),
 		ServeStaticModule.forRoot({
 			rootPath: `${join(path, 'uploads')}`,
