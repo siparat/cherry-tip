@@ -132,12 +132,13 @@ export class BotService {
 		}
 
 		const eatenCalories = calories.Breakfast + calories.Dinner + calories.Lunch + calories.Snack;
+		const remained = day.needCalories - eatenCalories;
 
 		const info: string = dedent`
 			*📅 ${format(day.date, "d MMMM yyyy' г.'", { locale: ru })} • 🔥 ${day.needCalories} Ккал*
 
 			🍴 *Съедено:* ${eatenCalories} Ккал
-			🍲 *Осталось:* ${day.needCalories - eatenCalories} Ккал
+			${remained >= 0 ? `*🍲 Осталось:* ${remained}` : `*😋 Переедание:* ${remained * -1}`} Ккал
 			🎯 *Цель в этот день:* ${goal}
 
 			🥚 *Белки:* ${protein} / ${day.protein} грамм
