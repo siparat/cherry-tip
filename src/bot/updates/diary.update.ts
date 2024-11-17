@@ -133,7 +133,7 @@ export class DiaryUpdate {
 			return next();
 		}
 
-		const recipes = await this.recipeRepository.search(q, { take: 15 });
+		const recipes = await this.recipeRepository.search(q, { take: 15 }, undefined, true);
 		await this.botService.sendRecipesInQuery(ctx, recipes, BotInlineTags.DIARY_ADD + '?' + params.toString());
 	}
 

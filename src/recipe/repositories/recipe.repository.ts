@@ -9,7 +9,7 @@ import { IRecipeTags } from '../recipe.interfaces';
 export class RecipeRepository {
 	constructor(private database: DatabaseService) {}
 
-	search(q: string, options: IPaginationParams, tags?: IRecipeTags): Promise<RecipeModel[]> {
+	search(q: string, options: IPaginationParams, tags?: IRecipeTags, allowPersonalRecipes?: boolean): Promise<RecipeModel[]> {
 		return this.database.recipeModel.findMany({
 			...options,
 			where: {
@@ -17,7 +17,7 @@ export class RecipeRepository {
 				categoryId: tags?.categoryId,
 				preparationId: tags?.preparationId,
 				dietsTypeId: tags?.dietsTypeId,
-				userId: null
+				userId: allowPersonalRecipes ? undefined : null
 			}
 		});
 	}
