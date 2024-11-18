@@ -142,6 +142,15 @@ export class CreateRecipeScene extends BaseScene {
 		}
 
 		ctx.wizard.state.carbs = carbs;
+		try {
+			await this.recipeService.createRecipe(user.id, ctx.wizard.state);
+			await ctx.reply(BotPhrases.RECIPES.CREATED);
+			await ctx.scene.leave();
+			await this.recipeUpdate.onStart(ctx);
+		} catch (error) {
+			ctx.reply(`*❗️ ${error.response.ru}. Введите данные заново: ❗️*`, { parse_mode: 'Markdown' });
+			await this.restart(ctx);
+		}
 		await this.recipeService.createRecipe(user.id, ctx.wizard.state);
 		await ctx.reply(BotPhrases.RECIPES.CREATED);
 		await ctx.scene.leave();

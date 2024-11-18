@@ -30,6 +30,10 @@ export const RecipeErrorMessages = {
 	FORBIDDEN_DELETE_RECIPE: {
 		ru: 'Запрещено удалять чужой рецепт',
 		en: "It is forbidden to delete someone else's recipe"
+	},
+	CALORIES_LIMIT_EXCEEDED: {
+		ru: 'Превышен лимит калорий, введите настоящие значения для БЖУ',
+		en: 'Calorie limit exceeded, check macro-nutrients'
 	}
 } satisfies ErrorsType;
 

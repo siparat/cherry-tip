@@ -1,6 +1,7 @@
 import { DifficultyEnum } from '@prisma/client';
 import { IRecipeEntity } from '../recipe.interfaces';
-import { NutrientValues } from '../recipe.constants';
+import { NutrientValues, RecipeErrorMessages } from '../recipe.constants';
+import { BadRequestException } from '@nestjs/common';
 
 export class RecipeEntity {
 	fat: number;
@@ -35,6 +36,9 @@ export class RecipeEntity {
 		this.dietsTypeId = recipe.dietsTypeId ?? undefined;
 		this.preparationId = recipe.preparationId ?? undefined;
 		this.calories = RecipeEntity.calculateCalories(this.protein, this.carbs, this.fat);
+		if (this.calories > Math.pow(2, 31) - 1) {
+			throw new BadRequestException(RecipeErrorMessages.CALORIES_LIMIT_EXCEEDED);
+		}
 		this.userId = recipe.userId ?? undefined;
 	}
 
