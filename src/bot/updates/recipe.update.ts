@@ -70,8 +70,12 @@ export class RecipeUpdate {
 
 	@UseGuards(TelegrafAuthGuard)
 	@InlineQuery(getRegExpTag(BotInlineTags.MINE))
-	async getMineRecipes(@Ctx() ctx: Context, @TelegrafUser() user: UserModel): Promise<void> {
-		const recipes = await this.recipeRepository.findMineRecipes(user.id, { take: 15 });
+	async getMineRecipes(
+		@Ctx() ctx: Context,
+		@TelegrafUser() user: UserModel,
+		@InlineMessage() q: string
+	): Promise<void> {
+		const recipes = await this.recipeRepository.findMineRecipes(user.id, { take: 15 }, q);
 		await this.botService.sendRecipesInQuery(ctx, recipes, BotInlineTags.SEARCH);
 	}
 

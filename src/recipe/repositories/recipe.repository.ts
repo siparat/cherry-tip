@@ -9,7 +9,12 @@ import { IRecipeTags } from '../recipe.interfaces';
 export class RecipeRepository {
 	constructor(private database: DatabaseService) {}
 
-	search(q: string, options: IPaginationParams, tags?: IRecipeTags, allowPersonalRecipes?: boolean): Promise<RecipeModel[]> {
+	search(
+		q: string,
+		options: IPaginationParams,
+		tags?: IRecipeTags,
+		allowPersonalRecipes?: boolean
+	): Promise<RecipeModel[]> {
 		return this.database.recipeModel.findMany({
 			...options,
 			where: {
@@ -22,8 +27,11 @@ export class RecipeRepository {
 		});
 	}
 
-	findMineRecipes(userId: string, options: IPaginationParams): Promise<RecipeModel[]> {
-		return this.database.recipeModel.findMany({ ...options, where: { userId } });
+	findMineRecipes(userId: string, options: IPaginationParams, q?: string): Promise<RecipeModel[]> {
+		return this.database.recipeModel.findMany({
+			...options,
+			where: { userId, title: { mode: 'insensitive', contains: q } }
+		});
 	}
 
 	createRecipe(recipeEntity: RecipeEntity): Promise<RecipeModel> {
