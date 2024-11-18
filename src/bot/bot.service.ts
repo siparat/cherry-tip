@@ -228,13 +228,13 @@ export class BotService {
 		const result: string[] = [];
 
 		const category = tagsModels.categories.find((t) => t.id == tags.categoryId);
-		category && result.push(category.title);
+		if (category) result.push(category.title);
 
 		const preparation = tagsModels.preparations.find((t) => t.id == tags.preparationId);
-		preparation && result.push(preparation.title);
+		if (preparation) result.push(preparation.title);
 
 		const diet = tagsModels.diets.find((t) => t.id == tags.dietsTypeId);
-		diet && result.push(diet.title);
+		if (diet) result.push(diet.title);
 
 		return result;
 	}

@@ -25,6 +25,7 @@ module.exports = {
       'warn',
       {
         ignoreRestSiblings: true,
+		caughtErrors: 'none'
       },
     ],
     'prettier/prettier': [

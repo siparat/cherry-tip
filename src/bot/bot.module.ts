@@ -16,10 +16,18 @@ import { ChallengeUpdate } from './updates/challenge.update';
 import { ChallengeModule } from 'src/challenge/challenge.module';
 import { DiaryUpdate } from './updates/diary.update';
 import { CalendarModule } from 'src/calendar/calendar.module';
+import { SettingsUpdate } from './updates/settings.update';
+import { ChangeHeightScene } from './scenes/user/change-height.scene';
+import { ChangeWeightScene } from './scenes/user/change-weight.scene';
+import { ChangeBirthScene } from './scenes/user/change-birth.scene';
+import { ChangeSexScene } from './scenes/user/change-sex.scene';
+import { ChangeActivityScene } from './scenes/user/change-activity.scene';
+import { ChangeGoalTypeScene } from './scenes/user/change-goal-type.scene';
 
 @Module({
 	imports: [AuthModule, UserModule, RecipeModule, ChallengeModule, CalendarModule, HttpModule],
 	providers: [
+		SettingsUpdate,
 		BotUpdate,
 		ChallengeUpdate,
 		RecipeUpdate,
@@ -30,7 +38,13 @@ import { CalendarModule } from 'src/calendar/calendar.module';
 		CreateProfileScene,
 		CreateGoalScene,
 		CreateUnitsScene,
-		CreateRecipeScene
+		CreateRecipeScene,
+		ChangeHeightScene,
+		ChangeWeightScene,
+		ChangeBirthScene,
+		ChangeSexScene,
+		ChangeActivityScene,
+		ChangeGoalTypeScene
 	]
 })
 export class BotModule {}
