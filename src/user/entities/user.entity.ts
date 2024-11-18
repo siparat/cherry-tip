@@ -1,6 +1,6 @@
 import { compare, hash } from 'bcrypt';
 import { IUserEntity } from '../user.interfaces';
-import { GoalTypeEnum, RoleEnum } from '@prisma/client';
+import { GoalTypeEnum, RoleEnum, SexEnum } from '@prisma/client';
 import { ProfileEntity } from './profile.entity';
 import { UnitsEntity } from './units.entity';
 import { UserErrorMessages } from '../user.constants';
@@ -61,7 +61,9 @@ export class UserEntity {
 		}
 		const age = Math.abs(new Date(Date.now() - this.profile.birth.getTime()).getUTCFullYear() - 1970);
 		const activityCoefficient = getActivityCoefficient(this.goal.activity);
-		const goalCalorie = (this.units.weight * 10 + this.units.height * 6.25 - age * 5) * activityCoefficient;
+		const goalCalorie =
+			(this.units.weight * 10 + this.units.height * 6.25 - age * 5 + this.profile.sex == SexEnum.Male ? 5 : -161) *
+			activityCoefficient;
 
 		switch (this.goal.type) {
 			case GoalTypeEnum.Stay:

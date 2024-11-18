@@ -7,19 +7,27 @@ export const BotSceneNames = {
 	CREATE_PROFILE: 'CREATE_PROFILE',
 	CREATE_UNITS: 'CREATE_UNITS',
 	CREATE_GOAL: 'CREATE_GOAL',
-	CREATE_RECIPE: 'CREATE_RECIPE'
+	CREATE_RECIPE: 'CREATE_RECIPE',
+	CHANGE_HEIGHT: 'CHANGE_HEIGHT',
+	CHANGE_WEIGHT: 'CHANGE_WEIGHT',
+	CHANGE_BIRTH: 'CHANGE_BIRTH',
+	CHANGE_ACTIVITY: 'CHANGE_ACTIVITY',
+	CHANGE_GOAL: 'CHANGE_GOAL',
+	CHANGE_SEX: 'CHANGE_SEX'
 };
 
 export const BotCommands = {
 	RECIPES: 'recipes',
 	DIARY: 'diary',
-	CHALLENGES: 'challenges'
+	CHALLENGES: 'challenges',
+	SETTINGS: 'settings'
 };
 
 export const BotNavigation: BotCommand[] = [
 	{ command: BotCommands.RECIPES, description: '🔍 Поиск и добавление рецептов' },
 	{ command: BotCommands.DIARY, description: '🍽️ Дневник питания' },
-	{ command: BotCommands.CHALLENGES, description: '🎯 Челленджи' }
+	{ command: BotCommands.CHALLENGES, description: '🎯 Челленджи' },
+	{ command: BotCommands.SETTINGS, description: '⚙️ Настройки' }
 ];
 
 export const BotPhrases = {
@@ -94,6 +102,13 @@ export const BotPhrases = {
 
 			🎯 Выбери день, для заполнения дневника в формате 2000-12-31:
 		`
+	},
+	SETTINGS: {
+		START: dedent`
+			*⚙️ Настройки*
+
+			Здесь ты можешь обновить параметры, которые влияют на расчёт твоих КБЖУ. Точные данные помогают составить рекомендации, которые лучше подходят именно тебе!
+		`
 	}
 };
 
@@ -140,6 +155,14 @@ export const BotActions = {
 		DINNARY: 'DIARY_DINNARY',
 		SNACK: 'DIARY_SNACK',
 		GET_MEAL_INFO: 'DIARY_GET_MEAL_INFO'
+	},
+	SETTINGS: {
+		CHANGE_HEIGHT: 'SETTINGS_CHANGE_HEIGHT',
+		CHANGE_WEIGHT: 'SETTINGS_CHANGE_WEIGHT',
+		CHANGE_BIRTH: 'SETTINGS_CHANGE_BIRTH',
+		CHANGE_ACTIVITY: 'SETTINGS_CHANGE_ACTIVITY',
+		CHANGE_GOAL: 'SETTINGS_CHANGE_GOAL',
+		CHANGE_SEX: 'SETTINGS_CHANGE_SEX'
 	}
 };
 

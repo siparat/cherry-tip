@@ -11,6 +11,6 @@ import { GoalRepository } from './repositories/goal.repository';
 	imports: [DatabaseModule],
 	controllers: [UserController],
 	providers: [UserRepository, UserService, ProfileRepository, UnitsRepository, GoalRepository],
-	exports: [UserRepository, UserService]
+	exports: [UserRepository, UserService, ProfileRepository, UnitsRepository, GoalRepository]
 })
 export class UserModule {}

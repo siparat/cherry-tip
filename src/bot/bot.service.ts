@@ -228,6 +228,7 @@ export class BotService {
 		const result: string[] = [];
 
 		const category = tagsModels.categories.find((t) => t.id == tags.categoryId);
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		category && result.push(category.title);
 
 		const preparation = tagsModels.preparations.find((t) => t.id == tags.preparationId);
