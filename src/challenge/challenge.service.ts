@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { ChallengeRepository } from './repositories/challenge.repository';
 import { ChallengeErrorMessages } from './challenge.constants';
@@ -9,7 +9,10 @@ import { excludeProperty } from 'src/helpers/object.helpers';
 
 @Injectable()
 export class ChallengeService {
-	constructor(private challengeRepository: ChallengeRepository) {}
+	constructor(
+		private challengeRepository: ChallengeRepository,
+		private logger: Logger
+	) {}
 
 	async createChallenge(dto: CreateChallengeDto): Promise<ChallengeModel> {
 		const existChallenge = await this.challengeRepository.findByTitle(dto.title);
@@ -18,7 +21,9 @@ export class ChallengeService {
 		}
 
 		const entity = new ChallengeEntity(dto);
-		return this.challengeRepository.createChallenge(entity);
+		const challenge = await this.challengeRepository.createChallenge(entity);
+		this.logger.log(`Challenge ${dto.title} has been successfully created`);
+		return challenge;
 	}
 
 	async editChallenge(id: number, dto: CreateChallengeDto): Promise<ChallengeModel> {
@@ -33,8 +38,9 @@ export class ChallengeService {
 		}
 
 		const entity = new ChallengeEntity({ ...existChallenge, ...dto });
-
-		return this.challengeRepository.editChallenge(id, entity);
+		const challenge = await this.challengeRepository.editChallenge(id, entity);
+		this.logger.log(`Challenge ${dto.title} has been successfully created`);
+		return challenge;
 	}
 
 	async startChallenge(challengeId: number, userId: string): Promise<UserChallengeModel> {
@@ -45,7 +51,9 @@ export class ChallengeService {
 		if (existedChallenge.userChallenge?.status == StatusEnum.Started) {
 			throw new BadRequestException(ChallengeErrorMessages.ALREADY_STARTED);
 		}
-		return this.challengeRepository.startChallenge(challengeId, userId);
+		const result = await this.challengeRepository.startChallenge(challengeId, userId);
+		this.logger.log(`Challenge ${existedChallenge.title} was started by user ${userId}`);
+		return result;
 	}
 
 	async cancelChallenge(challengeId: number, userId: string): Promise<UserChallengeModel> {
@@ -56,7 +64,9 @@ export class ChallengeService {
 		if (!existedChallenge.userChallenge || existedChallenge.userChallenge.status == StatusEnum.Canceled) {
 			throw new BadRequestException(ChallengeErrorMessages.ALREADY_CANCELED);
 		}
-		return this.challengeRepository.cancelChallenge(existedChallenge.userChallenge.id);
+		const result = await this.challengeRepository.cancelChallenge(existedChallenge.userChallenge.id);
+		this.logger.log(`Challenge ${existedChallenge.title} was cancelled by user ${userId}`);
+		return result;
 	}
 
 	async getStatus(challengeId: number, userId: string): Promise<IChallenge> {

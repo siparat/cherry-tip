@@ -7,6 +7,7 @@ import {
 	Get,
 	Header,
 	Headers,
+	Logger,
 	NotFoundException,
 	Param,
 	ParseIntPipe,
@@ -28,9 +29,6 @@ import { RecipeRepository } from './repositories/recipe.repository';
 import { RecipeErrorMessages } from './recipe.constants';
 import { User } from 'src/decorators/user.decorator';
 import { IRecipeTagModels, IRecipeTags } from './recipe.interfaces';
-import { RecipePreparationRepository } from './repositories/recipe-preparation.repository';
-import { RecipeDietTypeRepository } from './repositories/recipe-diet.type.repository';
-import { RecipeCategoryRepository } from './repositories/recipe-category.repository';
 import { Pagination } from 'src/decorators/pagination.decorator';
 import { LimitPaginationPipe } from 'src/pipes/limit-pagination.pipe';
 import { IPaginationParams, MimeTypeCategory } from 'src/common/common.interfaces';
@@ -49,9 +47,7 @@ export class RecipeController {
 		private userRepository: UserRepository,
 		private recipeService: RecipeService,
 		private recipeRepository: RecipeRepository,
-		private recipeCategoryRepository: RecipeCategoryRepository,
-		private recipeDietTypeRepository: RecipeDietTypeRepository,
-		private recipePreparationRepository: RecipePreparationRepository
+		private logger: Logger
 	) {}
 
 	@Get('search')
@@ -152,6 +148,8 @@ export class RecipeController {
 		if (existedRecipe.userId !== user.id && user.role !== RoleEnum.Admin) {
 			throw new ForbiddenException(RecipeErrorMessages.FORBIDDEN_DELETE_RECIPE);
 		}
-		return this.recipeRepository.editRecipeById(id);
+		const result = await this.recipeRepository.editRecipeById(id);
+		this.logger.log(`Recipe ${result.title} was deleted by user ${result.userId}`);
+		return result;
 	}
 }

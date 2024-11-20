@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { UserRepository } from 'src/user/repositories/user.repository';
 import { AuthRegisterDto } from './dto/auth-register.dto';
@@ -12,7 +12,8 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
 	constructor(
 		private userRepository: UserRepository,
-		private jwtService: JwtService
+		private jwtService: JwtService,
+		private logger: Logger
 	) {}
 
 	async createUser({ email, login, password }: AuthRegisterDto, tgId?: number): Promise<UserModel> {
@@ -23,6 +24,7 @@ export class AuthService {
 		const entity = new UserEntity({ email, login, passwordHash: '', role: RoleEnum.User, tgId });
 		await entity.setPassword(password);
 		const user = await this.userRepository.createUser(entity);
+		this.logger.log(`User ${user.id} has been successfully registered`);
 		return user;
 	}
 
@@ -32,7 +34,11 @@ export class AuthService {
 			throw new NotFoundException(AuthErrorMessages.NOT_FOUND);
 		}
 		const entity = new UserEntity(existedUser);
-		return entity.comparePassword(password);
+		const isValid = await entity.comparePassword(password);
+		if (isValid) {
+			this.logger.log(`User ${existedUser.id} has been logged in`);
+		}
+		return isValid;
 	}
 
 	async authenticationToken(token: string): Promise<JwtPayload | null> {

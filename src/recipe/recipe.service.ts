@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { RecipeModel } from '@prisma/client';
 import { RecipeEntity } from './entities/recipe.entity';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -14,6 +14,7 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class RecipeService {
 	constructor(
+		private logger: Logger,
 		private fileService: FileService,
 		private recipeRepository: RecipeRepository,
 		private recipeCategoryRepository: RecipeCategoryRepository,
@@ -37,7 +38,9 @@ export class RecipeService {
 		}
 
 		const entity = new RecipeEntity({ ...dto, userId });
-		return this.recipeRepository.createRecipe(entity);
+		const recipe = await this.recipeRepository.createRecipe(entity);
+		this.logger.log(`Recipe ${recipe.title} was created by user ${userId}`);
+		return recipe;
 	}
 
 	async editRecipe(id: number, dto: CreateRecipeDto): Promise<RecipeModel> {
@@ -57,13 +60,16 @@ export class RecipeService {
 		}
 
 		const entity = new RecipeEntity({ ...existWithThisName, ...dto });
-		return this.recipeRepository.editRecipe(id, entity);
+		const recipe = await this.recipeRepository.editRecipe(id, entity);
+		this.logger.log(`Recipe ${existWithThisName?.title} was updated by user ${recipe.userId}`);
+		return recipe;
 	}
 
 	async saveImage(file: Pick<Express.Multer.File, 'buffer'>): Promise<string> {
 		const name = randomUUID() + '.webp';
 		const buffer = await this.fileService.toAvif(file.buffer);
 		const url = await this.fileService.writeFile(name, buffer);
+		this.logger.log(`Uploaded image ${name}`);
 		return url;
 	}
 

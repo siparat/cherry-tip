@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DayModel, DayMealModel, UserModel } from '@prisma/client';
 import { DayRepository } from './repositories/day.repository';
 import { DayEntity as DayEntity } from './entities/day.entity';
@@ -11,7 +11,8 @@ import { CalendarErrorMessages } from './calendar.constants';
 export class CalendarService {
 	constructor(
 		private dayRepository: DayRepository,
-		private userService: UserService
+		private userService: UserService,
+		private logger: Logger
 	) {}
 
 	async createDay(user: UserModel, date: Date): Promise<DayModel> {
@@ -32,6 +33,8 @@ export class CalendarService {
 		if (!recipeDay) {
 			throw new BadRequestException(CalendarErrorMessages.DAY_NOT_FOUND);
 		}
-		return this.dayRepository.setRecipes(recipeDay.id, dto.recipes);
+		const result = await this.dayRepository.setRecipes(recipeDay.id, dto.recipes);
+		this.logger.log(`User ${user.id} set the meal for ${dto.category} on ${dto.date.toISOString()}`);
+		return result;
 	}
 }

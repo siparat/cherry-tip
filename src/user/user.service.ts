@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { GoalModel, ProfileModel, UnitsModel, UserModel } from '@prisma/client';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { ProfileEntity } from './entities/profile.entity';
@@ -19,12 +19,15 @@ export class UserService {
 		private userRepository: UserRepository,
 		private profileRepository: ProfileRepository,
 		private unitsRepository: UnitsRepository,
-		private goalRepository: GoalRepository
+		private goalRepository: GoalRepository,
+		private logger: Logger
 	) {}
 
 	async createProfile(userId: string, dto: CreateUserProfileDto): Promise<ProfileModel> {
 		const entity = new ProfileEntity({ ...dto, userId });
-		return this.profileRepository.createProfile(entity);
+		const profile = await this.profileRepository.createProfile(entity);
+		this.logger.log(`User ${userId} has created his profile`);
+		return profile;
 	}
 
 	async updateProfile(oldProfile: ProfileModel, dto: CreateUserProfileDto): Promise<ProfileModel> {
@@ -36,12 +39,15 @@ export class UserService {
 		}
 		const goalEntity = new GoalEntity({ ...userEntity.goal, user: userEntity });
 		await this.goalRepository.updateGoal(entity.userId, goalEntity);
+		this.logger.log(`User ${entity.userId} has updated his profile`);
 		return profile;
 	}
 
 	async createUnitsModel(userId: string, dto: CreateUserUnitsDto): Promise<UnitsModel> {
 		const entity = new UnitsEntity({ ...dto, userId });
-		return this.unitsRepository.createUnitsModel(entity);
+		const units = await this.unitsRepository.createUnitsModel(entity);
+		this.logger.log(`User ${userId} has filled in his units`);
+		return units;
 	}
 
 	async updateUnitsModel(oldUnitsModel: UnitsModel, dto: CreateUserUnitsDto): Promise<UnitsModel> {
@@ -53,6 +59,7 @@ export class UserService {
 		}
 		const goalEntity = new GoalEntity({ ...userEntity.goal, user: userEntity });
 		await this.goalRepository.updateGoal(entity.userId, goalEntity);
+		this.logger.log(`User ${entity.userId} has updated his units`);
 		return unitsModel;
 	}
 
@@ -69,7 +76,9 @@ export class UserService {
 		const profileEntity = new ProfileEntity(profile);
 		const userEntity = new UserEntity(user).setProfile(profileEntity).setUnits(unitsEntity);
 		const entity = new GoalEntity({ ...dto, user: userEntity });
-		return this.goalRepository.createGoal(entity);
+		const goal = await this.goalRepository.createGoal(entity);
+		this.logger.log(`User ${user.id} has set his goal`);
+		return goal;
 	}
 
 	async updateGoal(oldGoal: GoalModel, dto: CreateUserGoalDto): Promise<GoalModel> {
@@ -78,6 +87,7 @@ export class UserService {
 			throw new NotFoundException(UserErrorMessages.NOT_FOUND);
 		}
 		const entity = new GoalEntity({ ...oldGoal, ...dto, user: userEntity });
+		this.logger.log(`User ${entity.userId} has updated his goal`);
 		return this.goalRepository.updateGoal(oldGoal.userId, entity);
 	}
 

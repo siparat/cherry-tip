@@ -9,9 +9,10 @@ import { RecipePreparationRepository } from './repositories/recipe-preparation.r
 import { FileModule } from 'src/file/file.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
-	imports: [DatabaseModule, FileModule, AuthModule, UserModule],
+	imports: [DatabaseModule, FileModule, AuthModule, UserModule, LoggerModule.forEach('RecipeModule')],
 	controllers: [RecipeController],
 	providers: [
 		RecipeService,

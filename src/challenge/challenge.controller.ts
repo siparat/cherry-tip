@@ -6,6 +6,7 @@ import {
 	Headers,
 	HttpCode,
 	HttpStatus,
+	Logger,
 	NotFoundException,
 	Param,
 	ParseIntPipe,
@@ -40,7 +41,8 @@ export class ChallengeController {
 		private challengeService: ChallengeService,
 		private authService: AuthService,
 		private userRepository: UserRepository,
-		private challengeRepository: ChallengeRepository
+		private challengeRepository: ChallengeRepository,
+		private logger: Logger
 	) {}
 
 	@Get('search')
@@ -101,7 +103,9 @@ export class ChallengeController {
 		if (!existedChallenge) {
 			throw new NotFoundException(ChallengeErrorMessages.NOT_FOUND);
 		}
-		return this.challengeRepository.deleteById(id);
+		const result = await this.challengeRepository.deleteById(id);
+		this.logger.log(`Challenge ${result.title} has been successfully deleted`);
+		return result;
 	}
 
 	@UseGuards(JwtAuthGuard)

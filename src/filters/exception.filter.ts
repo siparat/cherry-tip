@@ -1,11 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ArgumentsHost, Catch } from '@nestjs/common';
-import { BaseExceptionFilter } from '@nestjs/core';
+import { ArgumentsHost, Catch, ConsoleLogger } from '@nestjs/common';
+import { AbstractHttpAdapter, BaseExceptionFilter } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { ErrorsType } from 'src/common/common.interfaces';
 
 @Catch()
 export class ExceptionFilter extends BaseExceptionFilter {
+	constructor(
+		appRef: AbstractHttpAdapter,
+		private logger: ConsoleLogger
+	) {
+		super(appRef);
+	}
+
 	override catch(exception: any, host: ArgumentsHost): void {
 		try {
 			if (
@@ -20,6 +27,7 @@ export class ExceptionFilter extends BaseExceptionFilter {
 			const res = host.switchToHttp().getResponse<Response>();
 			const language = this.getLanguage(req.headers.language);
 
+			this.logger.error(`[${exception.status}] ${exception.response[language]}`);
 			res.status(exception.status).json({
 				message: exception.response[language],
 				error: exception.message.split(' ').slice(0, -1).join(' '),
