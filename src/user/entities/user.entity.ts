@@ -62,7 +62,7 @@ export class UserEntity {
 		const age = Math.abs(new Date(Date.now() - this.profile.birth.getTime()).getUTCFullYear() - 1970);
 		const activityCoefficient = getActivityCoefficient(this.goal.activity);
 		const goalCalorie =
-			(this.units.weight * 10 + this.units.height * 6.25 - age * 5 + this.profile.sex == SexEnum.Male ? 5 : -161) *
+			(this.units.weight * 10 + this.units.height * 6.25 - age * 5 + (this.profile.sex == SexEnum.Male ? 5 : -161)) *
 			activityCoefficient;
 
 		switch (this.goal.type) {
