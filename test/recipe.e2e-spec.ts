@@ -81,16 +81,6 @@ describe('RecipeController (e2e)', () => {
 			recipeId = res.body.id;
 			expect(res.body.title).toBe(createRecipeDto.title);
 		});
-
-		it('Already exist with this name (fail)', async () => {
-			const res = await request(server)
-				.post('/recipe')
-				.set('Authorization', 'Bearer ' + token)
-				.set('Language', 'ru')
-				.send(createRecipeDto)
-				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.ru);
-		});
 	});
 
 	describe('/recipe/:id (GET)', () => {
@@ -136,29 +126,6 @@ describe('RecipeController (e2e)', () => {
 				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
 			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.ru);
-		});
-
-		it('Titles match (fail)', async () => {
-			const title = 'Вишневый пирог';
-
-			const id = (
-				await request(server)
-					.post('/recipe')
-					.set('Authorization', 'Bearer ' + token)
-					.set('Language', 'ru')
-					.send({ ...createRecipeDto, title })
-			).body.id;
-
-			const res = await request(server)
-				.put(`/recipe/${recipeId}`)
-				.send({ ...createRecipeDto, title })
-				.set('Authorization', 'Bearer ' + token)
-				.set('Language', 'ru')
-				.expect(HttpStatus.CONFLICT);
-
-			await database.recipeModel.delete({ where: { id } });
-
-			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.ru);
 		});
 
 		it('Edited (success)', async () => {

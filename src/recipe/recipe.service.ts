@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { RecipeModel } from '@prisma/client';
 import { RecipeEntity } from './entities/recipe.entity';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -23,10 +23,6 @@ export class RecipeService {
 	) {}
 
 	async createRecipe(userId: string, dto: CreateRecipeDto): Promise<RecipeModel> {
-		const existWithThisName = await this.recipeRepository.findByTitle(dto.title);
-		if (existWithThisName) {
-			throw new ConflictException(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME);
-		}
 		const options = {
 			categoryId: dto.categoryId,
 			dietsTypeId: dto.dietsTypeId,
@@ -44,9 +40,9 @@ export class RecipeService {
 	}
 
 	async editRecipe(id: number, dto: CreateRecipeDto): Promise<RecipeModel> {
-		const existWithThisName = await this.recipeRepository.findByTitle(dto.title);
-		if (existWithThisName && existWithThisName.id !== id) {
-			throw new ConflictException(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME);
+		const currentRecipe = await this.recipeRepository.findById(id);
+		if (!currentRecipe) {
+			throw new NotFoundException(RecipeErrorMessages.NOT_FOUND);
 		}
 
 		const options = {
@@ -59,9 +55,9 @@ export class RecipeService {
 			throw new NotFoundException(RecipeErrorMessages.TAG_NOT_FOUND);
 		}
 
-		const entity = new RecipeEntity({ ...existWithThisName, ...dto });
+		const entity = new RecipeEntity({ ...currentRecipe, ...dto });
 		const recipe = await this.recipeRepository.editRecipe(id, entity);
-		this.logger.log(`Recipe ${existWithThisName?.title} was updated by user ${recipe.userId}`);
+		this.logger.log(`Recipe ${currentRecipe?.title} was updated by user ${recipe.userId}`);
 		return recipe;
 	}
 
