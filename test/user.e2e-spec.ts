@@ -1,9 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { ActivityEnum, GoalTypeEnum, SexEnum } from '@prisma/client';
 import { Server } from 'http';
-import { AppModule } from 'src/app.module';
 import { AuthErrorMessages } from 'src/auth/auth.constants';
 import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
@@ -16,6 +15,7 @@ import { CommonDtoErrors } from 'src/common/common.constants';
 import * as request from 'supertest';
 import { CreateUserGoalDto } from 'src/user/dto/create-user-goal.dto';
 import { ExceptionFilter } from 'src/filters/exception.filter';
+import { TestAppModule } from './test-app.module';
 
 const loginDto: AuthLoginDto = {
 	email: 'b@b.ru',
@@ -55,10 +55,11 @@ describe('UserController (e2e)', () => {
 
 	beforeEach(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
-			imports: [AppModule]
+			imports: [TestAppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
-		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
+		const logger = new ConsoleLogger('ExceptionFilter');
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter, logger));
 		server = app.getHttpServer();
 		app.init();
 		userId = (await request(server).post('/auth/register').send(registerDto)).body.id;
@@ -67,14 +68,16 @@ describe('UserController (e2e)', () => {
 
 	describe('/user/account (GET)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).get('/user/account').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server).get('/user/account').set('Language', 'ru').expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Ok (success)', async () => {
 			const res = await request(server)
 				.get('/user/account')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.id).toBe(userId);
 		});
@@ -85,65 +88,76 @@ describe('UserController (e2e)', () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, birth: new Date(1899, 0, 1) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.MIN_DATE_BIRTH.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.MIN_DATE_BIRTH.ru);
 		});
 
 		it('Is not date (fail)', async () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, birth: '' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_DATE.ru);
 		});
 
 		it('Is not string (fail)', async () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, firstName: true })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING.ru);
 		});
 
 		it('Long name (fail)', async () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, firstName: 'a'.repeat(21) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_NAME.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_NAME.ru);
 		});
 
 		it('Long cityname (fail)', async () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, city: 'a'.repeat(21) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_CITYNAME.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.MAX_LENGTH_CITYNAME.ru);
 		});
 
 		it('Invalid sex (fail)', async () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, sex: 'Bisexual' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_SEX.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_SEX.ru);
 		});
 
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post('/user/profile').send(createProfileDto).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.post('/user/profile')
+				.set('Language', 'ru')
+				.send(createProfileDto)
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Created (seccess)', async () => {
 			const res = await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createProfileDto)
 				.expect(HttpStatus.CREATED);
 			expect(res.body.firstName).toBe(createProfileDto.firstName);
@@ -155,60 +169,71 @@ describe('UserController (e2e)', () => {
 			const res = await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createUnitsDto, height: '' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_INT.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_INT.ru);
 		});
 
 		it('Invalid height (fail)', async () => {
 			const res = await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createUnitsDto, height: -10 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_HEIGHT.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_HEIGHT.ru);
 		});
 
 		it('Invalid weight (fail)', async () => {
 			const res = await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createProfileDto, weight: 500 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_WEIGHT.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_WEIGHT.ru);
 		});
 
 		it('Invalid blood glucose (fail)', async () => {
 			const res = await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createUnitsDto, bloodGlucose: -100 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_BLOOD_GLUCOSE.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_BLOOD_GLUCOSE.ru);
 		});
 
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post('/user/units').send(createUnitsDto).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.post('/user/units')
+				.set('Language', 'ru')
+				.send(createUnitsDto)
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Already exist (fail)', async () => {
 			await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createUnitsDto);
 			const res = await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createUnitsDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST.en);
+			expect(res.body.message).toBe(UserErrorMessages.UNITS_MODEL_ALREADY_EXIST.ru);
 		});
 
 		it('Created (seccess)', async () => {
 			const res = await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createUnitsDto)
 				.expect(HttpStatus.CREATED);
 			expect(res.body.height).toBe(createUnitsDto.height);
@@ -220,84 +245,101 @@ describe('UserController (e2e)', () => {
 			const res = await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createGoalDto, type: 0 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_TYPE.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_TYPE.ru);
 		});
 
 		it('Invalid activity', async () => {
 			const res = await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createGoalDto, activity: 0 })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_ACTIVITY.en);
+			expect(res.body.message[0]).toBe(UserDtoErrors.INVALID_GOAL_ACTIVITY.ru);
 		});
 
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post('/user/goal').send(createGoalDto).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.post('/user/goal')
+				.set('Language', 'ru')
+				.send(createGoalDto)
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Profile is required (fail)', async () => {
 			await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createUnitsDto);
 			const res = await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createGoalDto)
 				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
-			expect(res.body.message).toBe(UserErrorMessages.PROFILE_IS_REQUIRED.en);
+			expect(res.body.message).toBe(UserErrorMessages.PROFILE_IS_REQUIRED.ru);
 		});
 
 		it('Units is required (fail)', async () => {
 			await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createProfileDto);
 			const res = await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createGoalDto)
 				.expect(HttpStatus.UNPROCESSABLE_ENTITY);
-			expect(res.body.message).toBe(UserErrorMessages.UNITS_IS_REQUIRED.en);
+			expect(res.body.message).toBe(UserErrorMessages.UNITS_IS_REQUIRED.ru);
 		});
 
 		it('Already exist (fail)', async () => {
 			await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createUnitsDto);
 			await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createProfileDto);
 			await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createGoalDto);
 			const res = await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createGoalDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(UserErrorMessages.GOAL_ALREADY_EXIST.en);
+			expect(res.body.message).toBe(UserErrorMessages.GOAL_ALREADY_EXIST.ru);
 		});
 
 		it('Created (seccess)', async () => {
 			await request(server)
 				.post('/user/units')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createUnitsDto);
 			await request(server)
 				.post('/user/profile')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createProfileDto);
 			const res = await request(server)
 				.post('/user/goal')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createGoalDto)
 				.expect(HttpStatus.CREATED);
 			expect(res.body.type).toBe(createGoalDto.type);

@@ -1,9 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { DifficultyEnum } from '@prisma/client';
 import { Server } from 'http';
-import { AppModule } from 'src/app.module';
 import { AuthErrorMessages } from 'src/auth/auth.constants';
 import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
@@ -13,6 +12,7 @@ import * as request from 'supertest';
 import { CreateRecipeDto } from 'src/recipe/dto/create-recipe.dto';
 import { RecipeErrorMessages } from 'src/recipe/recipe.constants';
 import { ExceptionFilter } from 'src/filters/exception.filter';
+import { TestAppModule } from './test-app.module';
 
 const loginDto: AuthLoginDto = {
 	email: 'c@c.ru',
@@ -43,10 +43,11 @@ describe('RecipeController (e2e)', () => {
 
 	beforeEach(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
-			imports: [AppModule]
+			imports: [TestAppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
-		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
+		const logger = new ConsoleLogger('ExceptionFilter');
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter, logger));
 		server = app.getHttpServer();
 		app.init();
 		userId = userId ?? (await request(server).post('/auth/register').send(registerDto)).body.id;
@@ -56,23 +57,25 @@ describe('RecipeController (e2e)', () => {
 
 	describe('/recipe (POST)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post('/recipe').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server).post('/recipe').set('Language', 'ru').expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Tag not found (fail)', async () => {
 			const res = await request(server)
 				.post('/recipe')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createRecipeDto, categoryId: -1 })
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.en);
+			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.ru);
 		});
 
 		it('Created (success)', async () => {
 			const res = await request(server)
 				.post('/recipe')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createRecipeDto)
 				.expect(HttpStatus.CREATED);
 			recipeId = res.body.id;
@@ -83,28 +86,36 @@ describe('RecipeController (e2e)', () => {
 			const res = await request(server)
 				.post('/recipe')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createRecipeDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
+			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.ru);
 		});
 	});
 
 	describe('/recipe/:id (GET)', () => {
 		it('Not found (fail)', async () => {
-			const res = await request(server).get('/recipe/-1').expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.en);
+			const res = await request(server).get('/recipe/-1').set('Language', 'ru').expect(HttpStatus.NOT_FOUND);
+			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Received (success)', async () => {
-			const res = await request(server).get(`/recipe/${recipeId}`).expect(HttpStatus.OK);
+			const res = await request(server)
+				.get(`/recipe/${recipeId}`)
+				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
+				.expect(HttpStatus.OK);
 			expect(res.body.title).toBe(createRecipeDto.title);
 		});
 	});
 
 	describe('/recipe/:id (PUT)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).put(`/recipe/${recipeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.put(`/recipe/${recipeId}`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Not found (fail)', async () => {
@@ -112,8 +123,9 @@ describe('RecipeController (e2e)', () => {
 				.put(`/recipe/-1`)
 				.send(createRecipeDto)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Tag not found (fail)', async () => {
@@ -121,16 +133,19 @@ describe('RecipeController (e2e)', () => {
 				.put(`/recipe/${recipeId}`)
 				.send({ ...createRecipeDto, categoryId: -1 })
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.en);
+			expect(res.body.message).toBe(RecipeErrorMessages.TAG_NOT_FOUND.ru);
 		});
 
 		it('Titles match (fail)', async () => {
 			const title = 'Вишневый пирог';
+
 			const id = (
 				await request(server)
 					.post('/recipe')
 					.set('Authorization', 'Bearer ' + token)
+					.set('Language', 'ru')
 					.send({ ...createRecipeDto, title })
 			).body.id;
 
@@ -138,11 +153,12 @@ describe('RecipeController (e2e)', () => {
 				.put(`/recipe/${recipeId}`)
 				.send({ ...createRecipeDto, title })
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.CONFLICT);
 
 			await database.recipeModel.delete({ where: { id } });
 
-			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
+			expect(res.body.message).toBe(RecipeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.ru);
 		});
 
 		it('Edited (success)', async () => {
@@ -150,6 +166,7 @@ describe('RecipeController (e2e)', () => {
 				.put(`/recipe/${recipeId}`)
 				.send({ ...createRecipeDto, title: 'Вишневый пирог' })
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.id).toBe(recipeId);
 		});
@@ -157,22 +174,27 @@ describe('RecipeController (e2e)', () => {
 
 	describe('/recipe/:id (DELETE)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).delete(`/recipe/${recipeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.delete(`/recipe/${recipeId}`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Not found (fail)', async () => {
 			const res = await request(server)
 				.delete(`/recipe/-1`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(RecipeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Deleted (success)', async () => {
 			const res = await request(server)
 				.delete(`/recipe/${recipeId}`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.id).toBe(recipeId);
 		});

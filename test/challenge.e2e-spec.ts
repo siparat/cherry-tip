@@ -1,9 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost, NestApplication } from '@nestjs/core';
 import { TestingModule, Test } from '@nestjs/testing';
 import { DifficultyEnum, RoleEnum } from '@prisma/client';
 import { Server } from 'http';
-import { AppModule } from 'src/app.module';
 import { AuthErrorMessages } from 'src/auth/auth.constants';
 import { AuthLoginDto } from 'src/auth/dto/auth-login.dto';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
@@ -15,6 +14,7 @@ import { ChallengeDtoErrors, ChallengeErrorMessages } from 'src/challenge/challe
 import { CommonDtoErrors } from 'src/common/common.constants';
 import { UserErrorMessages } from 'src/user/user.constants';
 import { ExceptionFilter } from 'src/filters/exception.filter';
+import { TestAppModule } from './test-app.module';
 
 const loginDto: AuthLoginDto = {
 	email: 'd@d.ru',
@@ -51,10 +51,11 @@ describe('ChallengeController (e2e)', () => {
 
 	beforeEach(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
-			imports: [AppModule]
+			imports: [TestAppModule]
 		}).compile();
 		app = moduleRef.createNestApplication();
-		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter));
+		const logger = new ConsoleLogger('ExceptionFilter');
+		app.useGlobalFilters(new ExceptionFilter(app.get(HttpAdapterHost).httpAdapter, logger));
 		server = app.getHttpServer();
 		app.init();
 		userId = userId ?? (await request(server).post('/auth/register').send(registerDto)).body.id;
@@ -65,8 +66,8 @@ describe('ChallengeController (e2e)', () => {
 
 	describe('/challenge (POST)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post('/challenge').expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server).post('/challenge').set('Language', 'ru').expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Only admins allowed (fail)', async () => {
@@ -74,78 +75,87 @@ describe('ChallengeController (e2e)', () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createChallengeDto)
 				.expect(HttpStatus.FORBIDDEN);
-			expect(res.body.message).toBe(UserErrorMessages.FORBIDDEN_ROLE.en);
+			expect(res.body.message).toBe(UserErrorMessages.FORBIDDEN_ROLE.ru);
 		});
 
 		it('Title is long (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, title: 'a'.repeat(25) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_TITLE.en);
+			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_TITLE.ru);
 		});
 
 		it('Description is long (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, description: 'a'.repeat(501) })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_DESCRIPTION.en);
+			expect(res.body.message[0]).toBe(ChallengeDtoErrors.MAX_LENGTH_DESCRIPTION.ru);
 		});
 
 		it('Is not url (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, image: 'WW image' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_URL.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_URL.ru);
 		});
 
 		it('Is not hex (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, color: 'black' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_HEX.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_HEX.ru);
 		});
 
 		it('Incorrect difficulty (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, difficulty: 'ok' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(ChallengeDtoErrors.INCORRECT_DIFFICULT.en);
+			expect(res.body.message[0]).toBe(ChallengeDtoErrors.INCORRECT_DIFFICULT.ru);
 		});
 
 		it('Is not array (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, tips: 'Clear your house of sweets' })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_ARRAY.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_ARRAY.ru);
 		});
 
 		it('Is not string (fail)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send({ ...createChallengeDto, tips: [0, 1, 2] })
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING.en);
+			expect(res.body.message[0]).toBe(CommonDtoErrors.IS_NOT_STRING.ru);
 		});
 
 		it('Created (success)', async () => {
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createChallengeDto)
 				.expect(HttpStatus.CREATED);
 			challengeId = res.body.id;
@@ -156,24 +166,26 @@ describe('ChallengeController (e2e)', () => {
 			await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createChallengeDto);
 			const res = await request(server)
 				.post('/challenge')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.send(createChallengeDto)
 				.expect(HttpStatus.CONFLICT);
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.ru);
 		});
 	});
 
 	describe('/challenge/:id (GET)', () => {
 		it('Not found (fail)', async () => {
-			const res = await request(server).get('/challenge/-1').expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
+			const res = await request(server).get('/challenge/-1').set('Language', 'ru').expect(HttpStatus.NOT_FOUND);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Received (success)', async () => {
-			const res = await request(server).get(`/challenge/${challengeId}`).expect(HttpStatus.OK);
+			const res = await request(server).get(`/challenge/${challengeId}`).set('Language', 'ru').expect(HttpStatus.OK);
 			expect(res.body.title).toBe(createChallengeDto.title);
 		});
 	});
@@ -183,19 +195,24 @@ describe('ChallengeController (e2e)', () => {
 			const res = await request(server)
 				.post('/challenge/-1/start')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post(`/challenge/${challengeId}/start`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.post(`/challenge/${challengeId}/start`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Started (success)', async () => {
 			const res = await request(server)
 				.post(`/challenge/${challengeId}/start`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.challengeId).toBe(challengeId);
 		});
@@ -204,8 +221,9 @@ describe('ChallengeController (e2e)', () => {
 			const res = await request(server)
 				.post(`/challenge/${challengeId}/start`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_STARTED.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_STARTED.ru);
 		});
 	});
 
@@ -214,19 +232,24 @@ describe('ChallengeController (e2e)', () => {
 			const res = await request(server)
 				.post('/challenge/-1/cancel')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).post(`/challenge/${challengeId}/cancel`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.post(`/challenge/${challengeId}/cancel`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Canceled (success)', async () => {
 			const res = await request(server)
 				.post(`/challenge/${challengeId}/cancel`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.challengeId).toBe(challengeId);
 		});
@@ -235,8 +258,9 @@ describe('ChallengeController (e2e)', () => {
 			const res = await request(server)
 				.post(`/challenge/${challengeId}/cancel`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.BAD_REQUEST);
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_CANCELED.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_CANCELED.ru);
 		});
 	});
 
@@ -245,19 +269,24 @@ describe('ChallengeController (e2e)', () => {
 			const res = await request(server)
 				.get('/challenge/-1/status')
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).get(`/challenge/${challengeId}/status`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.get(`/challenge/${challengeId}/status`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Recieved (success)', async () => {
 			const res = await request(server)
 				.get(`/challenge/${challengeId}/status`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.userChallenge).toBeDefined();
 		});
@@ -265,8 +294,11 @@ describe('ChallengeController (e2e)', () => {
 
 	describe('/challenge/:id (PUT)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).put(`/challenge/${challengeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.put(`/challenge/${challengeId}`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Not found (fail)', async () => {
@@ -274,8 +306,9 @@ describe('ChallengeController (e2e)', () => {
 				.put(`/challenge/-1`)
 				.send(createChallengeDto)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Titles match (fail)', async () => {
@@ -284,6 +317,7 @@ describe('ChallengeController (e2e)', () => {
 				await request(server)
 					.post('/challenge')
 					.set('Authorization', 'Bearer ' + token)
+					.set('Language', 'ru')
 					.send({ ...createChallengeDto, title })
 			).body.id;
 
@@ -291,11 +325,12 @@ describe('ChallengeController (e2e)', () => {
 				.put(`/challenge/${challengeId}`)
 				.send({ ...createChallengeDto, title })
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.CONFLICT);
 
 			await database.challengeModel.delete({ where: { id } });
 
-			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.ALREADY_EXIST_WITH_THIS_NAME.ru);
 		});
 
 		it('Edited (success)', async () => {
@@ -303,6 +338,7 @@ describe('ChallengeController (e2e)', () => {
 				.put(`/challenge/${challengeId}`)
 				.send({ ...createChallengeDto, title: 'Неделя без сладкого' })
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.id).toBe(challengeId);
 		});
@@ -310,22 +346,27 @@ describe('ChallengeController (e2e)', () => {
 
 	describe('/challenge/:id (DELETE)', () => {
 		it('Unauthorized (fail)', async () => {
-			const res = await request(server).delete(`/challenge/${challengeId}`).expect(HttpStatus.UNAUTHORIZED);
-			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.en);
+			const res = await request(server)
+				.delete(`/challenge/${challengeId}`)
+				.set('Language', 'ru')
+				.expect(HttpStatus.UNAUTHORIZED);
+			expect(res.body.message).toBe(AuthErrorMessages.UNAUTHORIZED.ru);
 		});
 
 		it('Not found (fail)', async () => {
 			const res = await request(server)
 				.delete(`/challenge/-1`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.NOT_FOUND);
-			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.en);
+			expect(res.body.message).toBe(ChallengeErrorMessages.NOT_FOUND.ru);
 		});
 
 		it('Deleted (success)', async () => {
 			const res = await request(server)
 				.delete(`/challenge/${challengeId}`)
 				.set('Authorization', 'Bearer ' + token)
+				.set('Language', 'ru')
 				.expect(HttpStatus.OK);
 			expect(res.body.id).toBe(challengeId);
 		});
