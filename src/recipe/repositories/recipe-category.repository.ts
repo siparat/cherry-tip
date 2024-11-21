@@ -1,16 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CategoryModel } from '@prisma/client';
+import { CategoryModel, Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class RecipeCategoryRepository {
 	constructor(private database: DatabaseService) {}
 
-	findById(id: number): Promise<CategoryModel | null> {
-		return this.database.categoryModel.findUnique({ where: { id } });
+	async findById(id: number): Promise<CategoryModel | null> {
+		const sql = Prisma.sql`
+			SELECT * FROM "CategoryModel"
+			WHERE id = ${id}
+		`;
+		const [category] = await this.database.$queryRaw<CategoryModel[]>(sql);
+		return category || null;
 	}
 
 	findAll(): Promise<CategoryModel[]> {
-		return this.database.categoryModel.findMany();
+		const sql = Prisma.sql`SELECT * FROM "CategoryModel"`;
+		return this.database.$queryRaw(sql);
 	}
 }
