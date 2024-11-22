@@ -1,55 +1,121 @@
 import { Injectable } from '@nestjs/common';
-import { UserModel } from '@prisma/client';
+import { GoalModel, Prisma, ProfileModel, UnitsModel, UserModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { UserEntity } from '../entities/user.entity';
 import { IAccount } from '../user.interfaces';
-import { excludeProperty } from 'src/helpers/object.helpers';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UserRepository {
 	constructor(private database: DatabaseService) {}
 
-	createUser(userEntity: UserEntity): Promise<UserModel> {
-		return this.database.userModel.create({ data: userEntity.getMainInfo() });
+	async createUser(userEntity: UserEntity): Promise<UserModel> {
+		const { tgId, login, email, passwordHash, role } = userEntity.getMainInfo();
+		const sql = Prisma.sql`
+			INSERT INTO "UserModel"("id", "updatedAt", "tgId", "login", "email", "passwordHash", "role") VALUES (
+				${randomUUID()},
+				now(),
+				${tgId},
+				${login},
+				${email},
+				${passwordHash},
+				${Prisma.sql`${role}::"RoleEnum"`}
+			)
+			RETURNING *
+		`;
+		const [user] = await this.database.$queryRaw<UserModel[]>(sql);
+		return user;
 	}
 
-	findByEmail(email: string): Promise<UserModel | null> {
-		return this.database.userModel.findUnique({ where: { email } });
+	async findByEmail(email: string): Promise<UserModel | null> {
+		const sql = Prisma.sql`
+			SELECT * FROM "UserModel"
+			WHERE email = ${email}
+			LIMIT 1
+		`;
+		const [user] = await this.database.$queryRaw<UserModel[]>(sql);
+		return user || null;
 	}
 
-	findUniqueUser(email?: string, login?: string, tgId?: number): Promise<UserModel | null> {
-		return this.database.userModel.findFirst({
-			where: {
-				OR: [
-					{ email: { mode: 'insensitive', equals: email } },
-					{ login: { mode: 'insensitive', equals: login } },
-					{ tgId }
-				]
-			}
-		});
+	async findUniqueUser(email?: string, login?: string, tgId?: number): Promise<UserModel | null> {
+		const sql = Prisma.sql`
+			SELECT * FROM "UserModel"
+			WHERE 
+				${email ? Prisma.sql`"email" ILIKE ${email}` : Prisma.sql``}
+				${email ? Prisma.sql`OR "login" ILIKE ${login}` : Prisma.sql``}
+				${email ? Prisma.sql`OR "tgId" = ${tgId}` : Prisma.sql``}
+			LIMIT 1
+		`;
+		const [user] = await this.database.$queryRaw<UserModel[]>(sql);
+		return user || null;
 	}
 
-	findByTgId(tgId: number): Promise<UserModel | null> {
-		return this.database.userModel.findUnique({ where: { tgId } });
+	async findByTgId(tgId: number): Promise<UserModel | null> {
+		const sql = Prisma.sql`
+			SELECT * FROM "UserModel"
+			WHERE "tgId" = ${tgId}
+			LIMIT 1
+		`;
+		const [user] = await this.database.$queryRaw<UserModel[]>(sql);
+		return user || null;
 	}
 
 	async findAccountById(id: string): Promise<IAccount | null> {
-		const account = await this.database.userModel.findUnique({
-			where: { id },
-			include: { profile: true, units: true, goal: true }
-		});
-		if (!account) {
-			return account;
+		const sql = Prisma.sql`
+			SELECT * FROM "UserModel" as u
+			LEFT JOIN "ProfileModel" p ON u.id = p."userId"
+			LEFT JOIN "UnitsModel" un ON u.id = un."userId"
+			LEFT JOIN "GoalModel" g ON u.id = g."userId"
+			WHERE id = ${id}
+		`;
+		const [user] = await this.database.$queryRaw<(UserModel & ProfileModel & UnitsModel & GoalModel)[]>(sql);
+		if (!user) {
+			return null;
 		}
-
-		const units = account.units ? excludeProperty(account.units, 'userId') : null;
-		const profile = account.profile ? excludeProperty(account.profile, 'userId') : null;
-		const goal = account.goal ? excludeProperty(account.goal, 'userId') : null;
-
-		return { ...account, profile, units, goal };
+		const account: IAccount = {
+			id: user.id,
+			tgId: user.tgId,
+			createdAt: user.createdAt,
+			updatedAt: user.updatedAt,
+			email: user.email,
+			login: user.login,
+			role: user.role,
+			passwordHash: user.passwordHash,
+			profile: !user.firstName
+				? null
+				: {
+						firstName: user.firstName,
+						lastName: user.lastName,
+						birth: user.birth,
+						city: user.city,
+						sex: user.sex
+					},
+			units: !user.weight
+				? null
+				: {
+						weight: user.weight,
+						height: user.height,
+						bloodGlucose: user.bloodGlucose,
+						targetWeight: user.targetWeight
+					},
+			goal: !user.type
+				? null
+				: {
+						type: user.type,
+						activity: user.activity,
+						calorieGoal: user.calorieGoal
+					}
+		};
+		return account;
 	}
 
-	deleteById(id: string): Promise<UserModel> {
-		return this.database.userModel.delete({ where: { id } });
+	async deleteById(id: string): Promise<UserModel> {
+		const sql = Prisma.sql`
+			DELETE FROM "UserModel"
+			WHERE id = ${id}
+			RETURNING *
+		`;
+		const [user] = await this.database.$queryRaw<UserModel[]>(sql);
+		return user || null;
 	}
 }
