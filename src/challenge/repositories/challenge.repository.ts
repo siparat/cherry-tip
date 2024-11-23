@@ -1,37 +1,85 @@
 import { Injectable } from '@nestjs/common';
-import { ChallengeModel, StatusEnum, UserChallengeModel } from '@prisma/client';
+import { ChallengeModel, Prisma, StatusEnum, UserChallengeModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { ChallengeEntity } from '../entities/challenge.entity';
 import { IChallenge } from '../challenge.interfaces';
-import { excludeProperty } from 'src/helpers/object.helpers';
 import { IPaginationParams } from 'src/common/common.interfaces';
 
 @Injectable()
 export class ChallengeRepository {
 	constructor(private database: DatabaseService) {}
 
-	createChallenge(entity: ChallengeEntity): Promise<ChallengeModel> {
-		return this.database.challengeModel.create({ data: entity });
+	async createChallenge(entity: ChallengeEntity): Promise<ChallengeModel> {
+		const { title, description, image, color, difficulty, tips, durationDays } = entity;
+		const sql = Prisma.sql`
+			INSERT INTO "ChallengeModel"("updatedAt", "title", "description", "image", "color", "difficulty", "tips", "durationDays") VALUES (
+				now(),
+				${title},
+				${description},
+				${image},
+				${color},
+				${Prisma.sql`${difficulty}::"DifficultyEnum"`},
+				${tips},
+				${durationDays}
+			)
+			RETURNING *
+		`;
+		const [challenge] = await this.database.$queryRaw<ChallengeModel[]>(sql);
+		return challenge;
 	}
 
-	editChallenge(id: number, entity: ChallengeEntity): Promise<ChallengeModel> {
-		return this.database.challengeModel.update({ where: { id }, data: entity });
+	async editChallenge(id: number, entity: ChallengeEntity): Promise<ChallengeModel> {
+		const sql = Prisma.sql`
+			UPDATE "ChallengeModel"
+			SET
+				"updatedAt" = now(),
+				"title" = ${entity.title},
+				"description" = ${entity.description},
+				"image" = ${entity.image},
+				"color" = ${entity.color},
+				"difficulty" = ${Prisma.sql`${entity.difficulty}::"DifficultyEnum"`},
+				"tips" = ${entity.tips},
+				"durationDays" = ${entity.durationDays}
+			WHERE id = ${id}
+			RETURNING *
+		`;
+		const [challenge] = await this.database.$queryRaw<ChallengeModel[]>(sql);
+		return challenge;
 	}
 
-	deleteById(id: number): Promise<ChallengeModel> {
-		return this.database.challengeModel.delete({ where: { id } });
+	async deleteById(id: number): Promise<ChallengeModel> {
+		const sql = Prisma.sql`
+			DELETE FROM "ChallengeModel"
+			WHERE id = ${id}
+			RETURNING *
+		`;
+		const [challenge] = await this.database.$queryRaw<ChallengeModel[]>(sql);
+		return challenge;
 	}
 
-	findByTitle(title: string): Promise<ChallengeModel | null> {
-		return this.database.challengeModel.findFirst({ where: { title } });
+	async findByTitle(title: string): Promise<ChallengeModel | null> {
+		const sql = Prisma.sql`
+			SELECT * FROM "ChallengeModel"
+			WHERE "title" = ${title}
+			LIMIT 1
+		`;
+		const [challenge] = await this.database.$queryRaw<ChallengeModel[]>(sql);
+		return challenge || null;
 	}
 
-	findById(id: number): Promise<ChallengeModel | null> {
-		return this.database.challengeModel.findUnique({ where: { id } });
+	async findById(id: number): Promise<ChallengeModel | null> {
+		const sql = Prisma.sql`SELECT * FROM "ChallengeModel" WHERE "id" = ${id}`;
+		const [challenge] = await this.database.$queryRaw<ChallengeModel[]>(sql);
+		return challenge || null;
 	}
 
-	findMany(options: IPaginationParams): Promise<ChallengeModel[]> {
-		return this.database.challengeModel.findMany(options);
+	async findMany(options: IPaginationParams): Promise<ChallengeModel[]> {
+		const sql = Prisma.sql`
+			SELECT * FROM "ChallengeModel" 
+			LIMIT ${options.take || null} OFFSET ${options.skip || 0}
+		`;
+		const challenges = await this.database.$queryRaw<ChallengeModel[]>(sql);
+		return challenges;
 	}
 
 	async findManyByStatus(
@@ -39,60 +87,125 @@ export class ChallengeRepository {
 		userId: string,
 		options: IPaginationParams
 	): Promise<IChallenge[]> {
-		const challenges = await this.database.challengeModel.findMany({
-			where: { userChallenges: { some: { userId, status } } },
-			include: { userChallenges: { where: { userId } } },
-			...options
-		});
+		const sql = Prisma.sql`
+			SELECT *, uc.id AS "userChallengeId", "challengeId" AS "id" FROM "ChallengeModel" c
+			LEFT JOIN "UserChallengeModel" uc ON uc."challengeId" = c.id
+			WHERE
+				uc."userId" = ${userId}
+				${status ? Prisma.sql`AND status = ${status}::"StatusEnum"` : Prisma.sql``}
+			LIMIT ${options.take || null} OFFSET ${options.skip || 0}
+		`;
 
-		return challenges.map((c) => {
-			const userChallenge = c.userChallenges[0];
-			return {
-				...excludeProperty(c, 'userChallenges'),
-				userChallenge: userChallenge && excludeProperty(userChallenge, 'challengeId')
-			};
-		});
+		const challenges =
+			await this.database.$queryRaw<(ChallengeModel & UserChallengeModel & { userChallengeId: number })[]>(sql);
+		return challenges.map((c) => ({
+			id: c.id,
+			createdAt: c.createdAt,
+			updatedAt: c.updatedAt,
+			title: c.title,
+			description: c.description,
+			image: c.image,
+			color: c.color,
+			difficulty: c.difficulty,
+			tips: c.tips,
+			durationDays: c.durationDays,
+			userChallenge: !c.userChallengeId
+				? undefined
+				: {
+						id: c.userChallengeId,
+						startDate: c.startDate,
+						status: c.status,
+						userId: c.userId
+					}
+		}));
 	}
 
 	async findWithUserInfo(challengeId: number, userId: string): Promise<IChallenge | null> {
-		const challenge = await this.database.challengeModel.findUnique({
-			where: { id: challengeId },
-			include: { userChallenges: { where: { userId } } }
-		});
+		const sql = Prisma.sql`
+			SELECT *, uc.id AS "userChallengeId", "challengeId" AS "id" FROM "ChallengeModel" c
+			LEFT JOIN "UserChallengeModel" uc ON uc."challengeId" = c.id AND uc."userId" = ${userId}
+			WHERE 
+				c.id = ${challengeId}
+			LIMIT 1
+		`;
+		const [challenge] =
+			await this.database.$queryRaw<(ChallengeModel & UserChallengeModel & { userChallengeId: number })[]>(sql);
 		if (!challenge) {
 			return null;
 		}
-		const userChallenge = challenge.userChallenges[0];
 		return {
-			...excludeProperty(challenge, 'userChallenges'),
-			userChallenge: userChallenge && excludeProperty(userChallenge, 'challengeId')
+			id: challenge.id,
+			createdAt: challenge.createdAt,
+			updatedAt: challenge.updatedAt,
+			title: challenge.title,
+			description: challenge.description,
+			image: challenge.image,
+			color: challenge.color,
+			difficulty: challenge.difficulty,
+			tips: challenge.tips,
+			durationDays: challenge.durationDays,
+			userChallenge: !challenge.userChallengeId
+				? undefined
+				: {
+						id: challenge.userChallengeId,
+						startDate: challenge.startDate,
+						status: challenge.status,
+						userId: challenge.userId
+					}
 		};
 	}
 
 	async startChallenge(challengeId: number, userId: string): Promise<UserChallengeModel> {
-		const userChallenge = await this.database.userChallengeModel.findFirst({ where: { userId, challengeId } });
+		const sql = Prisma.sql`
+			SELECT * FROM "UserChallengeModel"
+			WHERE 
+				"userId" = ${userId} AND
+				"challengeId" = ${challengeId}
+		`;
+		const [userChallenge] = await this.database.$queryRaw<UserChallengeModel[]>(sql);
 		if (userChallenge) {
-			return this.database.userChallengeModel.update({
-				where: { id: userChallenge.id },
-				data: { status: StatusEnum.Started, startDate: new Date() }
-			});
+			const sql = Prisma.sql`
+				UPDATE "UserChallengeModel"
+				SET
+					"startDate" = now(),
+					"status" = ${Prisma.sql`${StatusEnum.Started}::"StatusEnum"`}
+				WHERE id = ${userChallenge.id}
+				RETURNING *
+			`;
+			const [challenge] = await this.database.$queryRaw<UserChallengeModel[]>(sql);
+			return challenge;
 		}
-		return this.database.userChallengeModel.create({
-			data: { userId, challengeId, startDate: new Date() }
-		});
+		const sqlCreate = Prisma.sql`
+				INSERT INTO "UserChallengeModel"("userId", "challengeId", "startDate") VALUES (
+					${userId},
+					${challengeId},
+					now()
+				)
+				RETURNING *
+			`;
+		const [challenge] = await this.database.$queryRaw<UserChallengeModel[]>(sqlCreate);
+		return challenge;
 	}
 
-	cancelChallenge(userChallengeId: number): Promise<UserChallengeModel> {
-		return this.database.userChallengeModel.update({
-			where: { id: userChallengeId },
-			data: { status: StatusEnum.Canceled }
-		});
+	async cancelChallenge(userChallengeId: number): Promise<UserChallengeModel> {
+		const sql = Prisma.sql`
+				UPDATE "UserChallengeModel"
+				SET "status" = ${Prisma.sql`${StatusEnum.Canceled}::"StatusEnum"`}
+				WHERE id = ${userChallengeId}
+				RETURNING *
+			`;
+		const [challenge] = await this.database.$queryRaw<UserChallengeModel[]>(sql);
+		return challenge;
 	}
 
-	finishChallenge(userChallengeId: number): Promise<UserChallengeModel> {
-		return this.database.userChallengeModel.update({
-			where: { id: userChallengeId },
-			data: { status: StatusEnum.Finished }
-		});
+	async finishChallenge(userChallengeId: number): Promise<UserChallengeModel> {
+		const sql = Prisma.sql`
+				UPDATE "UserChallengeModel"
+				SET "status" = ${Prisma.sql`${StatusEnum.Finished}::"StatusEnum"`}
+				WHERE id = ${userChallengeId}
+				RETURNING *
+			`;
+		const [challenge] = await this.database.$queryRaw<UserChallengeModel[]>(sql);
+		return challenge;
 	}
 }
