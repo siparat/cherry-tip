@@ -18,7 +18,7 @@ export class RecipeRepository {
 		const sql = Prisma.sql`
 			SELECT * FROM "RecipeModel"
 			WHERE
-				("title" ILIKE ${'%' + `${q || ''}` + '%'} OR similarity(${q}, title) > 0.4)
+				("title" ILIKE ${'%' + `${q || ''}` + '%'} OR similarity(${q}, title) > 0.3)
 				${!allowPersonalRecipes ? Prisma.sql`AND "userId" IS NULL` : Prisma.sql``}
 
 				${tags?.categoryId ? Prisma.sql`AND "categoryId" = ${tags.categoryId}` : Prisma.sql``}
