@@ -1,5 +1,5 @@
 import { Action, Ctx, Message, On, Wizard, WizardStep } from 'nestjs-telegraf';
-import { BotActions, BotErrorMessages, BotPhrases, BotSceneNames } from 'src/bot/bot.constants';
+import { BotActions, BotPhrases, BotSceneNames } from 'src/bot/bot.constants';
 import { BaseScene } from '../base.scene';
 import { WizardContext } from 'src/bot/bot.interface';
 import { CreateRecipeDto } from 'src/recipe/dto/create-recipe.dto';
@@ -7,8 +7,6 @@ import { Markup } from 'telegraf';
 import { Message as IMessage, PhotoSize } from 'telegraf/typings/core/types/typegram';
 import { validateProp } from 'src/helpers/validation.helpers';
 import { TelegrafWarning } from 'src/bot/filters/telegraf-warning';
-import { RecipeRepository } from 'src/recipe/repositories/recipe.repository';
-import { TelegrafError } from 'src/bot/filters/telegraf-error';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { TelegrafExceptionFilter } from 'src/bot/filters/telegraf-exception.filter';
 import { RecipeService } from 'src/recipe/recipe.service';
@@ -25,7 +23,6 @@ import { ConfigService } from '@nestjs/config';
 @Wizard(BotSceneNames.CREATE_RECIPE)
 export class CreateRecipeScene extends BaseScene {
 	constructor(
-		private recipeRepository: RecipeRepository,
 		private recipeService: RecipeService,
 		private recipeUpdate: RecipeUpdate,
 		private httpService: HttpService,
@@ -47,11 +44,6 @@ export class CreateRecipeScene extends BaseScene {
 		const errors = await validateProp(CreateRecipeDto, 'title', title);
 		if (errors.length) {
 			throw new TelegrafWarning(errors[0]);
-		}
-
-		const existedRecipe = await this.recipeRepository.findByTitle(title);
-		if (existedRecipe) {
-			throw new TelegrafError(BotErrorMessages.RECIPE_ALREADY_EXIST.ru);
 		}
 
 		ctx.wizard.state.title = title;
@@ -151,9 +143,5 @@ export class CreateRecipeScene extends BaseScene {
 			ctx.reply(`*❗️ ${error.response.ru}. Введите данные заново: ❗️*`, { parse_mode: 'Markdown' });
 			await this.restart(ctx);
 		}
-		await this.recipeService.createRecipe(user.id, ctx.wizard.state);
-		await ctx.reply(BotPhrases.RECIPES.CREATED);
-		await ctx.scene.leave();
-		await this.recipeUpdate.onStart(ctx);
 	}
 }
