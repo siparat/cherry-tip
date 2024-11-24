@@ -50,7 +50,7 @@ export class RecipeRepository {
 		return this.database.recipeModel.update({ where: { id }, data: recipeEntity });
 	}
 
-	editRecipeById(id: number): Promise<RecipeModel> {
+	deleteRecipeById(id: number): Promise<RecipeModel> {
 		return this.database.recipeModel.delete({ where: { id } });
 	}
 }

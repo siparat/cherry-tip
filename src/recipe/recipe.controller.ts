@@ -148,7 +148,7 @@ export class RecipeController {
 		if (existedRecipe.userId !== user.id && user.role !== RoleEnum.Admin) {
 			throw new ForbiddenException(RecipeErrorMessages.FORBIDDEN_DELETE_RECIPE);
 		}
-		const result = await this.recipeRepository.editRecipeById(id);
+		const result = await this.recipeRepository.deleteRecipeById(id);
 		this.logger.log(`Recipe ${result.title} was deleted by user ${result.userId}`);
 		return result;
 	}
