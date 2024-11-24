@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RecipeModel } from '@prisma/client';
+import { Prisma, RecipeModel } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { RecipeEntity } from '../entities/recipe.entity';
 import { IPaginationParams } from 'src/common/common.interfaces';
@@ -15,16 +15,19 @@ export class RecipeRepository {
 		tags?: IRecipeTags,
 		allowPersonalRecipes?: boolean
 	): Promise<RecipeModel[]> {
-		return this.database.recipeModel.findMany({
-			...options,
-			where: {
-				title: { mode: 'insensitive', contains: q },
-				categoryId: tags?.categoryId,
-				preparationId: tags?.preparationId,
-				dietsTypeId: tags?.dietsTypeId,
-				userId: allowPersonalRecipes ? undefined : null
-			}
-		});
+		const sql = Prisma.sql`
+			SELECT * FROM "RecipeModel"
+			WHERE
+				("title" ILIKE ${'%' + `${q || ''}` + '%'} OR word_similarity(${q}, title) > 0.3)
+				${!allowPersonalRecipes ? Prisma.sql`AND "userId" IS NULL` : Prisma.sql``}
+
+				${tags?.categoryId ? Prisma.sql`AND "categoryId" = ${tags.categoryId}` : Prisma.sql``}
+				${tags?.dietsTypeId ? Prisma.sql`AND "dietsTypeId" = ${tags.dietsTypeId}` : Prisma.sql``}
+				${tags?.preparationId ? Prisma.sql`AND "preparationId" = ${tags.preparationId}` : Prisma.sql``}
+			LIMIT ${options.take || null} 
+			OFFSET ${options.skip || 0}
+		`;
+		return this.database.$queryRaw(sql);
 	}
 
 	findMineRecipes(userId: string, options: IPaginationParams, q?: string): Promise<RecipeModel[]> {
