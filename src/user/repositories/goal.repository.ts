@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { GoalModel } from '@prisma/client';
+import { GoalEntity } from '../entities/goal.entity';
 
 @Injectable()
 export class GoalRepository {
 	constructor(private database: DatabaseService) {}
 
-	createGoal(goalModel: GoalModel): Promise<GoalModel> {
-		return this.database.goalModel.create({ data: goalModel });
+	createGoal(goalEntity: GoalEntity): Promise<GoalModel> {
+		return this.database.goalModel.create({ data: goalEntity });
 	}
 
 	updateGoal(userId: string, goalModel: GoalModel): Promise<GoalModel> {
