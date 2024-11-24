@@ -1,4 +1,4 @@
-import { Action, Command, Ctx, InlineQuery, Message, Next, On, Update } from 'nestjs-telegraf';
+import { Action, Command, Ctx, InlineQuery, Message, Next, On, Sender, Update } from 'nestjs-telegraf';
 import { BotActions, BotCommands, BotErrorMessages, BotInlineTags, BotPhrases, BotSceneNames } from '../bot.constants';
 import { Markup } from 'telegraf';
 import { Context } from '../bot.interface';
@@ -11,15 +11,18 @@ import { BotService } from '../bot.service';
 import { TelegrafAuthGuard } from '../guards/telegraf-auth.guard';
 import { TelegrafUser } from '../decorators/telegraf-user.decorator';
 import { UserModel } from '@prisma/client';
-import { Message as IMessage } from 'telegraf/typings/core/types/typegram';
+import { Message as IMessage, User } from 'telegraf/typings/core/types/typegram';
 import { TelegrafError } from '../filters/telegraf-error';
 import { NextFunction } from 'express';
+import { UserRepository } from 'src/user/repositories/user.repository';
+import { RecipeErrorMessages } from 'src/recipe/recipe.constants';
 
 @UseFilters(TelegrafExceptionFilter)
 @Update()
 export class RecipeUpdate {
 	constructor(
 		private recipeRepository: RecipeRepository,
+		private userRepository: UserRepository,
 		private botService: BotService
 	) {}
 
@@ -42,7 +45,8 @@ export class RecipeUpdate {
 	async getRecipeCard(
 		@Ctx() ctx: Context,
 		@Message() msg: IMessage.TextMessage,
-		@Next() next: NextFunction
+		@Next() next: NextFunction,
+		@Sender() sender: User
 	): Promise<void> {
 		if (!msg.via_bot || msg.via_bot.id !== ctx.botInfo.id || !msg.text.startsWith(BotInlineTags.SEARCH)) {
 			return next();
@@ -52,13 +56,20 @@ export class RecipeUpdate {
 		if (!recipe) {
 			throw new TelegrafError(BotErrorMessages.NOT_FOUND.ru);
 		}
-
 		const caption = await this.botService.constructRecipeCard(recipe);
-		const keyboard = Markup.inlineKeyboard([Markup.button.callback('🔙 Назад', BotActions.RECIPES.BACK)]);
+
+		const buttons = [[Markup.button.callback('🔙 Назад', BotActions.RECIPES.BACK)]];
+		const user = await this.userRepository.findByTgId(sender.id);
+		if (user?.id == recipe.userId) {
+			const params = '?' + new URLSearchParams({ id: id.toString() }).toString();
+			buttons.push([Markup.button.callback('🗑 Удалить', BotActions.RECIPES.DELETE + params)]);
+		}
+
+		const keyboard = Markup.inlineKeyboard(buttons);
 		try {
 			await ctx.replyWithPhoto(recipe.image, { caption, parse_mode: 'Markdown', ...keyboard });
 		} catch (error) {
-			await ctx.reply(caption, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true, ...keyboard } });
+			await ctx.reply(caption, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, ...keyboard });
 		}
 	}
 
@@ -82,5 +93,34 @@ export class RecipeUpdate {
 	@Action(BotActions.RECIPES.CREATE)
 	async startCreatingRecipe(@Ctx() ctx: Context): Promise<void> {
 		await ctx.scene.enter(BotSceneNames.CREATE_RECIPE);
+	}
+
+	@Action(getRegExpTag(BotActions.RECIPES.DELETE))
+	async deleteRecipe(@Ctx() ctx: Context): Promise<void> {
+		const id = this.botService.getIdFromCallback(ctx.callbackQuery);
+		const recipe = await this.recipeRepository.findById(id);
+		if (!recipe) {
+			throw new TelegrafError(RecipeErrorMessages.NOT_FOUND.ru);
+		}
+
+		const params = '?' + new URLSearchParams({ id: id.toString() }).toString();
+		const keyboard = Markup.inlineKeyboard([
+			Markup.button.callback('❌ Отмена', BotActions.RECIPES.CANCEL_DELETING),
+			Markup.button.callback('✅ Удалить', BotActions.RECIPES.CONFIRM_DELETING + params)
+		]);
+
+		await ctx.reply(BotPhrases.RECIPES.CONFIRM_DELETING + recipe.title, keyboard);
+	}
+
+	@Action(getRegExpTag(BotActions.RECIPES.CONFIRM_DELETING))
+	async confirmDeletingRecipe(@Ctx() ctx: Context): Promise<void> {
+		const id = this.botService.getIdFromCallback(ctx.callbackQuery);
+		const { title } = await this.recipeRepository.deleteRecipeById(id);
+		await ctx.editMessageText(`💥 Рецепт ${title} успешно удален`);
+	}
+
+	@Action(getRegExpTag(BotActions.RECIPES.CANCEL_DELETING))
+	async cancelDeletingRecipe(@Ctx() ctx: Context): Promise<void> {
+		await ctx.deleteMessage();
 	}
 }

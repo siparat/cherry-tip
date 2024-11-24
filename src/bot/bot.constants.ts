@@ -85,7 +85,8 @@ export const BotPhrases = {
 		SEND_PROTEIN: '🥚 Белка в 100г:',
 		SEND_FAT: '🧈 Жиров в 100г:',
 		SEND_CARBS: '🍫 Углеводов в 100г:',
-		CREATED: '🌟 Рецепт успешно создан'
+		CREATED: '🌟 Рецепт успешно создан',
+		CONFIRM_DELETING: '⁉ Подтвердите удаление рецепта: '
 	},
 	CHALLENGES: {
 		START: dedent`
@@ -139,7 +140,10 @@ export const BotActions = {
 	RECIPES: {
 		CREATE: 'RECIPES_CREATE',
 		BACK: 'RECIPES_BACK',
-		SKIP_DESCRIPTION: 'RECIPES_SKIP_DESCRIPTION'
+		SKIP_DESCRIPTION: 'RECIPES_SKIP_DESCRIPTION',
+		DELETE: 'RECIPES_DELETE',
+		CANCEL_DELETING: 'RECIPES_CANCEL_DELETING',
+		CONFIRM_DELETING: 'RECIPES_CONFIRM_DELETING'
 	},
 	CHALLENGES: {
 		BACK: 'CHALLENGES_BACK',
